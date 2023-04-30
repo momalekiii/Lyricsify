@@ -19,7 +19,7 @@ To use Lyricsify, simply run the `lyricsify.py` script in a terminal or command 
 
 ## Credits
 
-Lyricsify was created by [Your Name] and is licensed under the [MIT License](LICENSE.md). The app uses the [Genius API](https://genius.com/developers) to search for and display song lyrics. The Spotify color scheme was adapted from the [Tkinter-Designer](https://github.com/ParthJadhav/Tkinter-Designer) project.
+Lyricsify was created by @momalekiii and is licensed under the [MIT License](LICENSE.md). The app uses the [Genius API](https://genius.com/developers) to search for and display song lyrics. The Spotify color scheme was adapted from the [Tkinter-Designer](https://github.com/ParthJadhav/Tkinter-Designer) project.
 
 ## Contributing
 
