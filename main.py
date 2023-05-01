@@ -42,10 +42,6 @@ def start_db():
 
 
 def show_artists():
-    artistsWindow = tk.Toplevel(root)
-    artistsWindow.title("Artists")
-    artistsWindow.geometry("480x720")
-    artistsWindow.config(bg="#191414")
     c.execute(
         """
             SELECT
@@ -56,6 +52,10 @@ def show_artists():
     artists = c.fetchall()
     # If we find a result lets display that
     if artists:
+        artistsWindow = tk.Toplevel(root)
+        artistsWindow.title("Artists")
+        artistsWindow.geometry("480x720")
+        artistsWindow.config(bg="#191414")
         artist_button = {}
         for artist in artists:
             artist_button[artist[0]] = ttk.Button(
@@ -66,15 +66,11 @@ def show_artists():
             artist_button[artist[0]].pack(pady=10, padx=10)
     else:
         lyrics_text.delete("1.0", tk.END)
-        lyrics_text.insert(tk.END, "No artists found")
+        lyrics_text.insert(tk.END, "No artists found in database")
 
 
 # search the db for all artists and display list
 def show_tracks(artist_id):
-    tracksWindow = tk.Toplevel(root)
-    tracksWindow.title("Artist Tracks")
-    tracksWindow.geometry("480x720")
-    tracksWindow.config(bg="#191414")
     c.execute(
         f"""
             SELECT
@@ -87,6 +83,10 @@ def show_tracks(artist_id):
     tracks = c.fetchall()
     # If we find a result lets display that
     if tracks:
+        tracksWindow = tk.Toplevel(root)
+        tracksWindow.title("Artist Tracks")
+        tracksWindow.geometry("480x720")
+        tracksWindow.config(bg="#191414")    
         track_button = {}
         for track in tracks:
             track_button[track[0]] = ttk.Button(
