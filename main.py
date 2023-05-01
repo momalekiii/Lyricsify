@@ -5,23 +5,62 @@ from tkinter import ttk
 import lyricsgenius
 import os
 from dotenv import load_dotenv
+import sqlite3
 
+# If it doesn't exist, generate database or connect if it does
+conn = sqlite3.connect('database.db') 
+c = conn.cursor()
+
+# Load Env Variables
 load_dotenv()
 
 #API access
 token = os.getenv('genius_token')
 genius = lyricsgenius.Genius(token)
 
+# Generate the database tables if they don't exist
+def start_db():
+    c.execute('''
+          CREATE TABLE IF NOT EXISTS lyrics
+          ([lyric_id] INTEGER PRIMARY KEY, 
+          [artist] TEXT, 
+          [lyrics] TEXT, 
+          [title] TEXT)
+          ''')
+                     
+    conn.commit()
+
 # Function to search for lyrics and update the display
 def search_lyrics():
     song_name = song_entry.get()
-    song = genius.search_song(song_name)
-    if song:
+    #Search the local database first
+    c.execute(f'''
+            SELECT
+            lyrics
+            FROM lyrics WHERE title LIKE '%{song_name}%'
+            OR lyrics LIKE '%{song_name}%'
+            ''')
+    result = c.fetchone()
+    #If we find a result lets display that
+    if result:
+        print('found in database')
         lyrics_text.delete("1.0", tk.END)
-        lyrics_text.insert(tk.END, song.lyrics)
+        lyrics_text.insert(tk.END, result)
+    #If not, lets search genuis and add it into the database
     else:
-        lyrics_text.delete("1.0", tk.END)
-        lyrics_text.insert(tk.END, f"Sorry, lyrics for '{song_name}' not found.")
+        print('nothing found, searching genuis')
+        song = genius.search_song(song_name)
+        if song:
+            lyrics_text.delete("1.0", tk.END)
+            lyrics_text.insert(tk.END, song.lyrics)
+            try:
+                c.execute("INSERT INTO lyrics VALUES (?,?,?,?)", (song.id,song.artist,song.lyrics,song.title))
+                conn.commit()
+            except sqlite3.IntegrityError:
+                print("Error, song ID does exist")
+        else:
+            lyrics_text.delete("1.0", tk.END)
+            lyrics_text.insert(tk.END, f"Sorry, lyrics for '{song_name}' not found.")
 
 # designing UI
 root = tk.Tk()
@@ -83,5 +122,5 @@ search_button.pack(pady=10)
 
 lyrics_text = tk.Text(root, font=("Arial", 12))
 lyrics_text.pack(fill=tk.BOTH, expand=True)
-
+start_db()
 root.mainloop()
