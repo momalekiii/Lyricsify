@@ -23,11 +23,11 @@ genius = lyricsgenius.Genius(token)
 def start_db():
     c.execute(
         """
-          CREATE TABLE IF NOT EXISTS lyrics
-          ([lyric_id] INTEGER PRIMARY KEY, 
-          [artist] TEXT, 
-          [lyrics] TEXT, 
-          [title] TEXT)
+          CREATE TABLE IF NOT EXISTS lyrics (
+        lyric_id INTEGER PRIMARY KEY NOT NULL, 
+          artist TEXT, 
+          lyrics TEXT, 
+          title VARCHAR(255))
           """
     )
     c.execute(
@@ -41,9 +41,73 @@ def start_db():
     conn.commit()
 
 
+def show_artists():
+    artistsWindow = tk.Toplevel(root)
+    artistsWindow.title("Artists")
+    artistsWindow.geometry("480x720")
+    artistsWindow.config(bg="#191414")
+    c.execute(
+        """
+            SELECT
+            artist_id, name
+            FROM artists
+            """
+    )
+    artists = c.fetchall()
+    # If we find a result lets display that
+    if artists:
+        artist_button = {}
+        for artist in artists:
+            artist_button[artist[0]] = ttk.Button(
+                artistsWindow,
+                text=f"{artist[1]}",
+                command=lambda artistname=artist[0]: show_tracks(artistname),
+            )
+            artist_button[artist[0]].pack(pady=10, padx=10)
+    else:
+        lyrics_text.delete("1.0", tk.END)
+        lyrics_text.insert(tk.END, "No artists found")
+
+
+# search the db for all artists and display list
+def show_tracks(artist_id):
+    tracksWindow = tk.Toplevel(root)
+    tracksWindow.title("Artist Tracks")
+    tracksWindow.geometry("480x720")
+    tracksWindow.config(bg="#191414")
+    c.execute(
+        f"""
+            SELECT
+            title, lyric_id, artist
+            FROM lyrics 
+            INNER JOIN artists ON artists.name = lyrics.artist
+            WHERE artist_id = {artist_id}
+            """
+    )
+    tracks = c.fetchall()
+    # If we find a result lets display that
+    if tracks:
+        track_button = {}
+        for track in tracks:
+            track_button[track[0]] = ttk.Button(
+                tracksWindow,
+                text=f"{track[0]}",
+                command=lambda trackname=track[0]: search_lyrics(trackname),
+            )
+            track_button[track[0]].pack(pady=10, padx=10)
+    else:
+        lyrics_text.delete("1.0", tk.END)
+        lyrics_text.insert(tk.END, "No tracks found")
+
+
 # Function to search for lyrics and update the display
-def search_lyrics():
-    song_name = song_entry.get()
+def search_lyrics(track=None):
+    if song_entry.get() != "":
+        song_name = song_entry.get()
+    else:
+        song_name = track
+    song_entry.delete(0, tk.END)
+    lyrics_text.pack(fill=tk.BOTH, expand=True)
     # Search the local database first
     c.execute(
         f"""
@@ -56,12 +120,12 @@ def search_lyrics():
     result = c.fetchone()
     # If we find a result lets display that
     if result:
-        print("found in database")
+        print(f"found {song_name} in database")
         lyrics_text.delete("1.0", tk.END)
         lyrics_text.insert(tk.END, result)
-    # If not, lets search genuis and add it into the database
+    # If not, lets search genius and add it into the database
     else:
-        print("nothing found, searching genuis")
+        print("nothing found, searching genius")
         song = genius.search_song(song_name)
         if song:
             lyrics_text.delete("1.0", tk.END)
@@ -72,14 +136,14 @@ def search_lyrics():
                     (song.id, song.primary_artist.name, song.lyrics, song.title),
                 )
             except sqlite3.IntegrityError:
-                print("Error, song ID does exist")
+                print(f"Error, {song.title} by {song.primary_artist.name} exists")
             try:
                 c.execute(
                     "INSERT INTO artists VALUES (?,?)",
                     (song.primary_artist.id, song.primary_artist.name),
                 )
             except sqlite3.IntegrityError:
-                print("Error, artist does exist")
+                print(f"Error, {song.primary_artist.name} exists")
             conn.commit()
         else:
             lyrics_text.delete("1.0", tk.END)
@@ -157,8 +221,13 @@ song_entry.pack(pady=10)
 search_button = ttk.Button(root, text="Search", command=search_lyrics)
 search_button.pack(pady=10)
 
+artists_button = ttk.Button(root, text="Artists", command=show_artists)
+artists_button.pack(pady=10)
+
 lyrics_text = tk.Text(root, font=("Arial", 12), yscrollcommand=scroll_bar.set)
 lyrics_text.pack(fill=tk.BOTH, expand=True)
+
 scroll_bar.config(command=lyrics_text.yview)
+
 start_db()
 root.mainloop()
