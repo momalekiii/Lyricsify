@@ -6,10 +6,28 @@ Lyricsify is a Python application that uses the [Genius API](https://genius.com/
 
 ## Installation
 
-To run Lyricsify, you'll need Python 3 and the `lyricsgenius` package installed. You can install `lyricsgenius` using pip:
+To run Lyricsify, you'll need Python 3. Create new python env
 
+```bash
+python -m venv env
 ```
-pip install lyricsgenius
+
+activate env
+
+linux
+```bash
+source env/bin/activate
+```
+
+windows
+```ps1
+.\env\Scripts\Activate.ps1
+```
+
+install requirements
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Usage
