@@ -26,6 +26,11 @@ def start_db():
           [artist] TEXT, 
           [lyrics] TEXT, 
           [title] TEXT)
+          ''')    
+    c.execute('''
+            CREATE TABLE IF NOT EXISTS artists (
+            artist_id INTEGER PRIMARY KEY NOT NULL,
+            name VARCHAR(255) NOT NULL)
           ''')
                      
     conn.commit()
@@ -54,10 +59,14 @@ def search_lyrics():
             lyrics_text.delete("1.0", tk.END)
             lyrics_text.insert(tk.END, song.lyrics)
             try:
-                c.execute("INSERT INTO lyrics VALUES (?,?,?,?)", (song.id,song.artist,song.lyrics,song.title))
-                conn.commit()
+                c.execute("INSERT INTO lyrics VALUES (?,?,?,?)", (song.id,song.primary_artist.name,song.lyrics,song.title))
             except sqlite3.IntegrityError:
                 print("Error, song ID does exist")
+            try:
+                c.execute("INSERT INTO artists VALUES (?,?)", (song.primary_artist.id,song.primary_artist.name))
+            except sqlite3.IntegrityError:
+                print("Error, artist does exist")
+            conn.commit()
         else:
             lyrics_text.delete("1.0", tk.END)
             lyrics_text.insert(tk.END, f"Sorry, lyrics for '{song_name}' not found.")
@@ -122,5 +131,6 @@ search_button.pack(pady=10)
 
 lyrics_text = tk.Text(root, font=("Arial", 12))
 lyrics_text.pack(fill=tk.BOTH, expand=True)
+
 start_db()
 root.mainloop()
