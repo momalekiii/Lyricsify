@@ -6,29 +6,31 @@ Lyricsify is a Python application that uses the [Genius API](https://genius.com/
 
 ## Installation
 
-To run Lyricsify, you'll need Python 3. Create new python env
+To run Lyricsify, you'll need Python 3. Create new Python env
 
 ```bash
 python -m venv env
 ```
 
-activate env
+Activate env
 
-linux
+Linux
 ```bash
 source env/bin/activate
 ```
 
-windows
+Windows
 ```ps1
 .\env\Scripts\Activate.ps1
 ```
 
-install requirements
+Install Requirements
 
 ```bash
 pip install -r requirements.txt
 ```
+
+Rename .env.example to .env and add your Genuis token
 
 ## Usage
 

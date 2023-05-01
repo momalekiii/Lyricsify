@@ -3,9 +3,14 @@
 import tkinter as tk
 from tkinter import ttk
 import lyricsgenius
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #API access
-genius = lyricsgenius.Genius('YOUR_PTIVATE_API_TOKEN')
+token = os.getenv('genius_token')
+genius = lyricsgenius.Genius(token)
 
 # Function to search for lyrics and update the display
 def search_lyrics():
