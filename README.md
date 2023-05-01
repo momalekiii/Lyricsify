@@ -34,7 +34,7 @@ Rename .env.example to .env and add your Genuis token
 
 ## Usage
 
-To use Lyricsify, simply run the `lyricsify.py` script in a terminal or command prompt. The graphical user interface will appear, prompting you to enter the name of a song. Once you click the "Search" button, Lyricsify will search for the lyrics to that song using the Genius API and display them in the text box.
+To use Lyricsify, simply run the `main.py` script in a terminal or command prompt. The graphical user interface will appear, prompting you to enter the name of a song. Once you click the "Search" button, Lyricsify will search for the lyrics to that song using the Genius API and display them in the text box.
 
 
 ## Credits
