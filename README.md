@@ -6,15 +6,35 @@ Lyricsify is a Python application that uses the [Genius API](https://genius.com/
 
 ## Installation
 
-To run Lyricsify, you'll need Python 3 and the `lyricsgenius` package installed. You can install `lyricsgenius` using pip:
+To run Lyricsify, you'll need Python 3. Create new Python env
 
+```bash
+python -m venv env
 ```
-pip install lyricsgenius
+
+Activate env
+
+Linux
+```bash
+source env/bin/activate
 ```
+
+Windows
+```ps1
+.\env\Scripts\Activate.ps1
+```
+
+Install Requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+Rename .env.example to .env and add your Genuis token
 
 ## Usage
 
-To use Lyricsify, simply run the `lyricsify.py` script in a terminal or command prompt. The graphical user interface will appear, prompting you to enter the name of a song. Once you click the "Search" button, Lyricsify will search for the lyrics to that song using the Genius API and display them in the text box.
+To use Lyricsify, simply run the `main.py` script in a terminal or command prompt. The graphical user interface will appear, prompting you to enter the name of a song. Once you click the "Search" button, Lyricsify will search for the lyrics to that song using the Genius API and display them in the text box.
 
 
 ## Credits
