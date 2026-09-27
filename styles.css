@@ -372,3 +372,26 @@ button,input,textarea,select{-webkit-tap-highlight-color:transparent}
 :root{--sans:Inter,"Segoe UI",Arial,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 :root[lang="fa"]{--sans:Vazirmatn,Tahoma,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 body{font-family:var(--sans)}
+
+/* Search matches stay in a compact, scrollable popover below the search field. */
+.search-panel{position:relative;z-index:20}
+.search-results-menu{position:absolute;z-index:25;inset-inline:0;top:calc(100% + 9px);max-height:min(54vh,430px);overflow:auto;padding:10px;border:1px solid var(--line);border-radius:15px;background:#1d1d1d;color:#f7f7f7;box-shadow:0 18px 48px rgba(0,0,0,.36);overscroll-behavior:contain;scrollbar-color:#555 transparent}
+:root:not([data-theme="dark"]) .search-results-menu{background:#fff;color:#151515;box-shadow:0 18px 48px rgba(0,0,0,.17)}
+.search-menu-header{position:sticky;top:-10px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px;padding:2px 8px 8px;background:inherit;color:var(--muted);font:600 10px/1.4 var(--sans)}
+.search-menu-header .result-count{color:var(--quiet);font-size:9px;white-space:nowrap}
+.search-menu-status{padding:13px 10px;color:var(--muted);font-size:12px}
+.search-results-menu .results-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
+.search-results-menu .result-card{width:100%;min-height:66px;padding:7px 9px;border:0;border-radius:9px;background:transparent;color:inherit;box-shadow:none;transform:none}
+.search-results-menu .result-card:hover,.search-results-menu .result-card:focus-visible{outline:none;background:rgba(255,255,255,.09)}
+:root:not([data-theme="dark"]) .search-results-menu .result-card:hover,:root:not([data-theme="dark"]) .search-results-menu .result-card:focus-visible{background:rgba(0,0,0,.06)}
+.search-results-menu .result-cover{width:48px;height:48px;border-radius:6px}
+.search-results-menu .result-info strong{font-size:12px}
+.search-results-menu .result-info span{font-size:10px}
+.search-results-menu .result-arrow{color:var(--brand)}
+:root[data-view="searching"] .results-section>.section-heading,:root[data-view="results"] .results-section>.section-heading{display:none!important}
+:root[data-view="results"] .results-section{padding-block:0}
+@media(max-width:480px){
+  .search-results-menu{inset-inline:0;top:calc(100% + 7px);max-height:min(58vh,400px);padding:8px;border-radius:12px}
+  .search-results-menu .result-card{min-height:60px}
+  .search-results-menu .result-cover{width:44px;height:44px}
+}

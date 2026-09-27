@@ -13,8 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lrclib.net">
   <link rel="preconnect" href="https://api.lyrics.ovh">
-  <link rel="stylesheet" href="styles.css?v=warm11">
-  <script src="app.js?v=warm11" defer></script>
+  <link rel="stylesheet" href="styles.css?v=warm12">
+  <script src="app.js?v=warm12" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -66,7 +66,7 @@
         <label class="search-label" for="search-input" data-i18n="searchPrompt">What are we listening for?</label>
         <div class="search-row">
           <div class="search-input-wrap"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4 4"></path></svg>
-            <input id="search-input" name="q" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Song, artist, or a lyric you remember…" autocomplete="off" required>
+            <input id="search-input" name="q" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Song, artist, or a lyric you remember…" autocomplete="off" aria-controls="search-results-menu" aria-expanded="false" required>
             <kbd>↵</kbd>
           </div>
           <label class="sr-only" for="provider-select">Search provider</label>
@@ -78,15 +78,20 @@
           <button class="search-button" type="submit"><span id="search-button-label" data-i18n="findLyrics">Find lyrics</span> <span aria-hidden="true">↗</span></button>
         </div>
         <div class="search-hint"><span class="sparkle" aria-hidden="true">✳</span> <span data-i18n="tryExample">Try</span> <button type="button" class="suggestion" data-query="Dreams Fleetwood Mac" data-i18n="suggestionDreams">“Dreams” by Fleetwood Mac</button> <span data-i18n="orWord">or</span> <button type="button" class="suggestion" data-query="Daft Punk Get Lucky" data-i18n="suggestionGetLucky">“Get Lucky” by Daft Punk</button></div>
+        <div class="search-results-menu" id="search-results-menu" role="region" aria-live="polite" hidden aria-label="Search results">
+          <div class="search-menu-header"><span id="search-menu-title"></span><span class="result-count" id="result-count"></span></div>
+          <div id="search-menu-status" class="search-menu-status" role="status" hidden></div>
+          <div id="results" class="results-grid"></div>
+        </div>
       </form>
 
       <section class="results-section" aria-live="polite" aria-busy="false">
         <div class="section-heading">
           <div><div class="eyebrow small-eyebrow" id="section-kicker" data-i18n="homeKicker">A GOOD PLACE TO START</div><h2 id="section-title" data-i18n="homeTitle">Pick a song. Keep a line.</h2></div>
-          <span class="result-count" id="result-count"></span>
+          <span class="result-count" id="saved-result-count"></span>
         </div>
         <div id="notice" class="notice" role="status" hidden></div>
-        <div id="results" class="results-grid"></div>
+        <div id="results-slot" class="results-grid"></div>
         <div id="detail" class="detail-layout" hidden>
           <article class="lyrics-card">
             <div class="track-heading">
