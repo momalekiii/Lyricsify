@@ -1,233 +1,234 @@
-# Developed by @momalekiii
+"""Optional desktop client for Lyricsify (the primary app is the static web app)."""
 
-import tkinter as tk
-from tkinter import ttk
-import lyricsgenius
+from __future__ import annotations
+
 import os
-from dotenv import load_dotenv
+import queue
 import sqlite3
+import threading
+import tkinter as tk
+from pathlib import Path
+from tkinter import ttk
 
-# If it doesn't exist, generate database or connect if it does
-conn = sqlite3.connect("database.db")
-c = conn.cursor()
+from dotenv import load_dotenv
 
-# Load Env Variables
-load_dotenv()
-
-# API access
-token = os.getenv("genius_token")
-genius = lyricsgenius.Genius(token)
-
-
-# Generate the database tables if they don't exist
-def start_db():
-    c.execute(
-        """
-          CREATE TABLE IF NOT EXISTS lyrics (
-        lyric_id INTEGER PRIMARY KEY NOT NULL, 
-          artist TEXT, 
-          lyrics TEXT, 
-          title VARCHAR(255))
-          """
-    )
-    c.execute(
-        """
-            CREATE TABLE IF NOT EXISTS artists (
-            artist_id INTEGER PRIMARY KEY NOT NULL,
-            name VARCHAR(255) NOT NULL)
-          """
-    )
-
-    conn.commit()
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "database.db"
+RESULTS: queue.Queue = queue.Queue()
 
 
-def show_artists():
-    c.execute(
-        """
-            SELECT
-            artist_id, name
-            FROM artists
-            """
-    )
-    artists = c.fetchall()
-    # If we find a result lets display that
-    if artists:
-        artistsWindow = tk.Toplevel(root)
-        artistsWindow.title("Artists")
-        artistsWindow.geometry("480x720")
-        artistsWindow.config(bg="#191414")
-        artist_button = {}
-        for artist in artists:
-            artist_button[artist[0]] = ttk.Button(
-                artistsWindow,
-                text=f"{artist[1]}",
-                command=lambda artistname=artist[0]: show_tracks(artistname),
-            )
-            artist_button[artist[0]].pack(pady=10, padx=10)
-    else:
-        lyrics_text.delete("1.0", tk.END)
-        lyrics_text.insert(tk.END, "No artists found in database")
+def start_db() -> None:
+    """Create the local cache tables, keeping the connection on the UI thread."""
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS lyrics (
+                lyric_id INTEGER PRIMARY KEY,
+                artist TEXT NOT NULL,
+                lyrics TEXT NOT NULL,
+                title TEXT NOT NULL
+            )"""
+        )
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS artists (
+                artist_id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )"""
+        )
 
 
-# search the db for all artists and display list
-def show_tracks(artist_id):
-    c.execute(
-        f"""
-            SELECT
-            title, lyric_id, artist
-            FROM lyrics 
-            INNER JOIN artists ON artists.name = lyrics.artist
-            WHERE artist_id = {artist_id}
-            """
-    )
-    tracks = c.fetchall()
-    # If we find a result lets display that
-    if tracks:
-        tracksWindow = tk.Toplevel(root)
-        tracksWindow.title("Artist Tracks")
-        tracksWindow.geometry("480x720")
-        tracksWindow.config(bg="#191414")    
-        track_button = {}
-        for track in tracks:
-            track_button[track[0]] = ttk.Button(
-                tracksWindow,
-                text=f"{track[0]}",
-                command=lambda trackname=track[0]: search_lyrics(trackname),
-            )
-            track_button[track[0]].pack(pady=10, padx=10)
-    else:
-        lyrics_text.delete("1.0", tk.END)
-        lyrics_text.insert(tk.END, "No tracks found")
+def display_message(message: str) -> None:
+    lyrics_text.configure(state="normal")
+    lyrics_text.delete("1.0", tk.END)
+    lyrics_text.insert(tk.END, message)
 
 
-# Function to search for lyrics and update the display
-def search_lyrics(track=None):
-    if song_entry.get() != "":
-        song_name = song_entry.get()
-    else:
-        song_name = track
+def show_artists() -> None:
+    with sqlite3.connect(DB_PATH) as connection:
+        artists = connection.execute(
+            "SELECT DISTINCT artist FROM lyrics ORDER BY artist COLLATE NOCASE"
+        ).fetchall()
+    if not artists:
+        display_message("No artists found in your local library yet.")
+        return
+
+    window = tk.Toplevel(root)
+    window.title("Artists in your library")
+    window.geometry("400x520")
+    window.configure(bg="#191414")
+    for (name,) in artists:
+        ttk.Button(
+            window,
+            text=name,
+            command=lambda artist=name: show_tracks(artist),
+        ).pack(fill=tk.X, padx=14, pady=5)
+
+
+def show_tracks(artist: str) -> None:
+    with sqlite3.connect(DB_PATH) as connection:
+        tracks = connection.execute(
+            "SELECT title FROM lyrics WHERE artist = ? ORDER BY title COLLATE NOCASE",
+            (artist,),
+        ).fetchall()
+    if not tracks:
+        display_message("No tracks found for this artist.")
+        return
+
+    window = tk.Toplevel(root)
+    window.title(f"Tracks by {artist}")
+    window.geometry("400x520")
+    window.configure(bg="#191414")
+    for (title,) in tracks:
+        ttk.Button(
+            window,
+            text=title,
+            command=lambda track=title: search_lyrics(track),
+        ).pack(fill=tk.X, padx=14, pady=5)
+
+
+def search_lyrics(track: str | None = None) -> None:
+    """Check the local cache first, then query Genius without freezing Tk."""
+    query = (track or song_entry.get()).strip()
+    if not query:
+        display_message("Enter a song, artist, or lyric to search for.")
+        song_entry.focus_set()
+        return
+
     song_entry.delete(0, tk.END)
-    lyrics_text.pack(fill=tk.BOTH, expand=True)
-    # Search the local database first
-    c.execute(
-        f"""
-            SELECT
-            lyrics
-            FROM lyrics WHERE title LIKE '%{song_name}%'
-            OR lyrics LIKE '%{song_name}%'
-            """
+    pattern = f"%{query}%"
+    with sqlite3.connect(DB_PATH) as connection:
+        cached = connection.execute(
+            """SELECT artist, lyrics, title FROM lyrics
+               WHERE title LIKE ? OR lyrics LIKE ? OR artist LIKE ?
+               ORDER BY CASE WHEN title LIKE ? THEN 0 ELSE 1 END
+               LIMIT 1""",
+            (pattern, pattern, pattern, pattern),
+        ).fetchone()
+    if cached:
+        artist, lyrics, title = cached
+        display_message(f"{title} — {artist}\n\n{lyrics}")
+        status.set("Showing a song saved on this device.")
+        return
+
+    token = os.getenv("genius_token", "").strip()
+    if not token or token == "TOKEN_HERE":
+        display_message(
+            "No local match found. To use Genius in the desktop client, add a valid "
+            "genius_token to your .env file.\n\nThe Lyricsify web app can search "
+            "LRCLIB and Lyrics.ovh without a Genius token."
+        )
+        return
+
+    search_button.configure(state="disabled")
+    status.set("Searching Genius…")
+    display_message(f"Searching for “{query}”…")
+
+    def worker() -> None:
+        try:
+            import lyricsgenius
+
+            genius = lyricsgenius.Genius(token, timeout=15, retries=1, skip_non_songs=True)
+            song = genius.search_song(query)
+            RESULTS.put((query, song, None))
+        except Exception as error:  # surfaced in the UI instead of crashing the app
+            RESULTS.put((query, None, str(error)))
+
+    threading.Thread(target=worker, daemon=True).start()
+    root.after(100, check_search_result)
+
+
+def check_search_result() -> None:
+    try:
+        query, song, error = RESULTS.get_nowait()
+    except queue.Empty:
+        root.after(100, check_search_result)
+        return
+
+    search_button.configure(state="normal")
+    if error:
+        display_message(f"Couldn't search Genius: {error}")
+        status.set("Search failed. Check your connection and Genius token.")
+        return
+    if not song:
+        display_message(f"Sorry, lyrics for '{query}' were not found.")
+        status.set("No lyrics found.")
+        return
+
+    artist = song.primary_artist.name
+    lyrics = song.lyrics or ""
+    title = song.title
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO lyrics (lyric_id, artist, lyrics, title) VALUES (?, ?, ?, ?)",
+            (song.id, artist, lyrics, title),
+        )
+        connection.execute(
+            "INSERT OR IGNORE INTO artists (artist_id, name) VALUES (?, ?)",
+            (song.primary_artist.id, artist),
+        )
+    display_message(f"{title} — {artist}\n\n{lyrics}")
+    status.set(f"Lyrics provided by Genius for “{title}”.")
+
+
+def build_app() -> None:
+    global root, song_entry, lyrics_text, search_button, status
+
+    root = tk.Tk()
+    root.title("Lyricsify")
+    root.geometry("620x760")
+    root.minsize(420, 520)
+    root.configure(bg="#191414")
+    style = ttk.Style(root)
+    if "lyricsify" not in style.theme_names():
+        style.theme_create(
+            "lyricsify",
+            parent="clam",
+            settings={
+                "TLabel": {"configure": {"background": "#191414", "foreground": "#f4f0e7"}},
+                "TButton": {
+                    "configure": {"background": "#d8f277", "foreground": "#191a13", "padding": 9, "font": ("Arial", 11, "bold")},
+                    "map": {"background": [("active", "#e3ff8e"), ("disabled", "#777777")]},
+                },
+                "TEntry": {"configure": {"padding": 9, "font": ("Arial", 12)}},
+            },
+        )
+    style.theme_use("lyricsify")
+
+    ttk.Label(root, text="Lyricsify", font=("Arial", 25, "bold")).pack(pady=(22, 3))
+    ttk.Label(root, text="Find the words behind the music", foreground="#aaa89f").pack(pady=(0, 16))
+    ttk.Label(root, text="Search by song, artist, or a lyric", font=("Arial", 11)).pack(pady=(0, 6))
+    song_entry = ttk.Entry(root)
+    song_entry.pack(fill=tk.X, padx=28, pady=4)
+    song_entry.bind("<Return>", lambda _event: search_lyrics())
+    controls = ttk.Frame(root)
+    controls.pack(pady=9)
+    search_button = ttk.Button(controls, text="Search", command=search_lyrics)
+    search_button.pack(side=tk.LEFT, padx=5)
+    ttk.Button(controls, text="Artists", command=show_artists).pack(side=tk.LEFT, padx=5)
+
+    body = tk.Frame(root, bg="#191414")
+    body.pack(fill=tk.BOTH, expand=True, padx=28, pady=(8, 6))
+    scrollbar = ttk.Scrollbar(body)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    lyrics_text = tk.Text(
+        body,
+        wrap=tk.WORD,
+        font=("Arial", 12),
+        bg="#201f1b",
+        fg="#f1efe7",
+        insertbackground="#d8f277",
+        padx=15,
+        pady=14,
+        yscrollcommand=scrollbar.set,
+        relief=tk.FLAT,
     )
-    result = c.fetchone()
-    # If we find a result lets display that
-    if result:
-        print(f"found {song_name} in database")
-        lyrics_text.delete("1.0", tk.END)
-        lyrics_text.insert(tk.END, result)
-    # If not, lets search genius and add it into the database
-    else:
-        print("nothing found, searching genius")
-        song = genius.search_song(song_name)
-        if song:
-            lyrics_text.delete("1.0", tk.END)
-            lyrics_text.insert(tk.END, song.lyrics)
-            try:
-                c.execute(
-                    "INSERT INTO lyrics VALUES (?,?,?,?)",
-                    (song.id, song.primary_artist.name, song.lyrics, song.title),
-                )
-            except sqlite3.IntegrityError:
-                print(f"Error, {song.title} by {song.primary_artist.name} exists")
-            try:
-                c.execute(
-                    "INSERT INTO artists VALUES (?,?)",
-                    (song.primary_artist.id, song.primary_artist.name),
-                )
-            except sqlite3.IntegrityError:
-                print(f"Error, {song.primary_artist.name} exists")
-            conn.commit()
-        else:
-            lyrics_text.delete("1.0", tk.END)
-            lyrics_text.insert(tk.END, f"Sorry, lyrics for '{song_name}' not found.")
+    lyrics_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    scrollbar.configure(command=lyrics_text.yview)
+    status = tk.StringVar(value="Search lyrics or browse your local library.")
+    ttk.Label(root, textvariable=status, anchor="w").pack(fill=tk.X, padx=28, pady=(2, 14))
+    root.mainloop()
 
 
-# designing UI
-root = tk.Tk()
-root.title("Lyricsify")
-root.geometry("480x720")
-root.config(bg="#191414")
-style = ttk.Style()
-style.theme_create(
-    "spotify",
-    parent="alt",
-    settings={
-        "TLabel": {"configure": {"background": "#191414", "foreground": "white"}},
-        "Vertical.TScrollbar": {
-            "configure": {
-                "background": "#1DB954",
-                "foreground": "white",
-                "bordercolor": "white",
-                "arrowcolor": "white",
-                "padding": 10,
-            }
-        },
-        "TButton": {
-            "configure": {
-                "background": "#1DB954",
-                "foreground": "white",
-                "padding": 10,
-                "font": ("Arial", 16),
-                "borderwidth": 0,
-            },
-            "map": {"background": [("active", "#1ED760"), ("disabled", "grey")]},
-        },
-        "TEntry": {
-            "configure": {
-                "background": "white",
-                "foreground": "black",
-                "font": ("Arial", 16),
-                "padding": 10,
-                "borderwidth": 0,
-            },
-            "map": {"background": [("active", "#E6E6E6"), ("disabled", "grey")]},
-        },
-        "TText": {
-            "configure": {
-                "background": "#F2F2F2",
-                "foreground": "black",
-                "font": ("Arial", 12),
-                "borderwidth": 0,
-            }
-        },
-    },
-)
-style.theme_use("spotify")
-
-scroll_bar = ttk.Scrollbar(root)
-scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
-
-header_label = ttk.Label(
-    root, text="Lyricsify", font=("Arial", 24), foreground="white", anchor="center"
-)
-header_label.pack(pady=20)
-
-song_label = ttk.Label(
-    root, text="Enter song name or lyrics snippet:", font=("Arial", 16)
-)
-song_label.pack(pady=10)
-
-song_entry = ttk.Entry(root, font=("Arial", 16))
-song_entry.pack(pady=10)
-
-search_button = ttk.Button(root, text="Search", command=search_lyrics)
-search_button.pack(pady=10)
-
-artists_button = ttk.Button(root, text="Artists", command=show_artists)
-artists_button.pack(pady=10)
-
-lyrics_text = tk.Text(root, font=("Arial", 12), yscrollcommand=scroll_bar.set)
-lyrics_text.pack(fill=tk.BOTH, expand=True)
-
-scroll_bar.config(command=lyrics_text.yview)
-
-start_db()
-root.mainloop()
+if __name__ == "__main__":
+    load_dotenv(BASE_DIR / ".env")
+    start_db()
+    build_app()
