@@ -518,7 +518,7 @@ body{min-width:320px;min-height:100vh;margin:0;overflow-x:hidden;background:var(
   .results-slot{grid-template-columns:minmax(0,1fr)}
 }
 html{scroll-behavior:auto}
-.app-shell,.topbar,.brand,.search-panel,.results-section,.result-card,.about-dialog{animation:none!important;transition:none!important}
+.app-shell,.topbar,.brand,.results-section,.result-card,.about-dialog{animation:none!important;transition:none!important}
 
 /* Centered logo, compact controls, and tap-to-select lyric lines. */
 .topbar{justify-content:flex-end;padding-inline:clamp(12px,3vw,28px)}
@@ -609,7 +609,7 @@ html{scroll-behavior:auto}
 :root[data-view="detail"] .search-panel,
 :root[data-view="saved"] .search-panel,
 :root[data-view="no-results"] .search-panel,
-:root[data-view="network-error"] .search-panel{top:132px;width:min(530px,calc(100vw - 36px));transform:translate(-50%,-50%) scale(.98)}
+:root[data-view="network-error"] .search-panel{position:fixed;left:50%;top:132px;width:min(530px,calc(100vw - 36px));transform:translate(-50%,-50%) scale(.98)}
 :root[data-view="searching"] .search-row,
 :root[data-view="results"] .search-row,
 :root[data-view="detail"] .search-row,
