@@ -498,7 +498,7 @@ body{min-width:320px;min-height:100vh;margin:0;overflow-x:hidden;background:var(
 .results-slot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 :root[data-view="home"] .results-section,:root[data-view="searching"] .results-section,:root[data-view="results"] .results-section{display:none!important}
 :root[data-view="home"] #empty-state{display:none!important}
-:root[data-view="detail"] .search-panel,:root[data-view="saved"] .search-panel,:root[data-view="no-results"] .search-panel,:root[data-view="network-error"] .search-panel{position:relative;top:auto;left:auto;width:min(560px,calc(100vw - 36px));margin:84px auto 18px;transform:none}
+:root[data-view="detail"] .search-panel,:root[data-view="saved"] .search-panel,:root[data-view="no-results"] .search-panel,:root[data-view="network-error"] .search-panel{position:relative;top:auto;left:auto;width:min(560px,calc(100vw - 36px));margin:0;transform:none}
 :root[data-view="detail"] .results-section,:root[data-view="saved"] .results-section,:root[data-view="no-results"] .results-section,:root[data-view="network-error"] .results-section{display:block}
 :root[data-view="detail"] .section-heading{display:none}
 :root[data-view="saved"] .search-results-menu,:root[data-view="detail"] .search-results-menu{display:none!important}
@@ -515,7 +515,7 @@ body{min-width:320px;min-height:100vh;margin:0;overflow-x:hidden;background:var(
   .lyrics-text{max-height:42vh;font-size:14px}
   .share-actions{gap:6px}
   .share-button{min-height:38px;padding-inline:10px}
-  :root[data-view="detail"] .search-panel,:root[data-view="saved"] .search-panel,:root[data-view="no-results"] .search-panel,:root[data-view="network-error"] .search-panel{margin-top:72px}
+  :root[data-view="detail"] .search-panel,:root[data-view="saved"] .search-panel,:root[data-view="no-results"] .search-panel,:root[data-view="network-error"] .search-panel{margin-top:0}
   .results-slot{grid-template-columns:minmax(0,1fr)}
 }
 html{scroll-behavior:auto}
@@ -657,3 +657,14 @@ html{scroll-behavior:auto}
   :root[data-view="network-error"] .results-section{padding-top:194px}
 }
 @media(prefers-reduced-motion:reduce){.center-logo,.search-panel,.search-row,.search-input-wrap{transition:none!important}}
+
+/* FIX: when a song/saved/no-results/error view is showing, the search bar and logo
+   scroll with the page instead of hovering (position:fixed) over the lyrics. */
+:root[data-view="detail"] .center-logo,
+:root[data-view="saved"] .center-logo,
+:root[data-view="no-results"] .center-logo,
+:root[data-view="network-error"] .center-logo,
+:root[data-view="detail"] .search-panel,
+:root[data-view="saved"] .search-panel,
+:root[data-view="no-results"] .search-panel,
+:root[data-view="network-error"] .search-panel{position:absolute}

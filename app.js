@@ -627,6 +627,10 @@
         return;
       }
       if (errors.some((error) => error.status === 429) && !currentResults.some((song) => song.lyrics)) setNotice(t('rateLimitError'));
+      else if (errors.length && !currentResults.some((song) => song.lyrics)) {
+        console.warn('Lyricsify: lyric sources failed', errors);
+        setNotice(errors.every((error) => error.name === 'AbortError') ? t('timeoutError') : t('sourceError'));
+      }
       viewMode = 'results';
       updateSectionText();
       $('#search-menu-status').hidden = true;
@@ -963,19 +967,31 @@
 
 
   function wrapText(context, text, maxWidth) {
-    const words = text.split(/\s+/);
+    // Keep the user's line breaks: each line of the snippet starts on a new line
+    // in the card; only lines too long for the card get wrapped further.
     const lines = [];
-    let line = '';
-    for (const word of words) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (line && context.measureText(candidate).width > maxWidth) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = candidate;
+    let previousBlank = false;
+    for (const rawLine of String(text).split(/\r\n?|\n/)) {
+      const words = rawLine.trim().split(/\s+/).filter(Boolean);
+      if (!words.length) {
+        if (lines.length && !previousBlank) lines.push('');
+        previousBlank = true;
+        continue;
       }
+      previousBlank = false;
+      let line = '';
+      for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word;
+        if (line && context.measureText(candidate).width > maxWidth) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = candidate;
+        }
+      }
+      if (line) lines.push(line);
     }
-    if (line) lines.push(line);
+    while (lines.length && lines[lines.length - 1] === '') lines.pop();
     return lines;
   }
 
