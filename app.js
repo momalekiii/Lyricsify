@@ -4,6 +4,7 @@
   const $ = (selector) => document.querySelector(selector);
   const searchForm = $('#search-form');
   const searchInput = $('#search-input');
+  const clearSearchButton = $('#clear-search');
   const providerSelect = $('#provider-select');
   const resultsNode = $('#results');
   const searchResultsMenu = $('#search-results-menu');
@@ -46,7 +47,7 @@
       yourSpace:'YOUR SPACE', discover:'Discover', savedSongs:'Saved songs', providerNote:'Two lyric sources, one little app.', about:'About',
       breadcrumb:'YOUR MUSIC, IN WORDS', findTheLine:'FIND THE LINE', heroTitle:'Songs say it<br><span>better.</span>',
       heroIntro:'Look up a song, find the words that hit, and make a little something worth sharing.',
-      searchPrompt:'Search for a song or artist', searchPlaceholder:'Song or artist', allSources:'All sources', findLyrics:'Find lyrics', looking:'Searching…',
+      searchPrompt:'Search for a song or artist', searchPlaceholder:'Song or artist', clearSearch:'Clear search', allSources:'All sources', findLyrics:'Find lyrics', looking:'Searching…',
       tryExample:'Try', orWord:'or', suggestionDreams:'“Dreams” by Fleetwood Mac', suggestionGetLucky:'“Get Lucky” by Daft Punk',
       homeKicker:'A GOOD PLACE TO START', homeTitle:'Pick a song. Keep a line.', searchingKicker:'SEARCHING THE CATALOG',
       lookingFor:'Looking for', foundKicker:'FOUND IN THE CATALOG', oneMatch:'One song, one starting point.', manyMatches:'Which one sounds right?',
@@ -91,7 +92,7 @@
       yourSpace:'گوشهٔ تو', discover:'خانه', savedSongs:'آهنگای ذخیره‌شده', providerNote:'دو تا منبع ترانه، یه جا.', about:'درباره‌مون',
       breadcrumb:'موسیقی و حرفایی که می‌مونه', findTheLine:'اون مصرعو پیدا کن', heroTitle:'بعضی آهنگا<br><span>به‌جات حرف می‌زنن.</span>',
       heroIntro:'اسم آهنگو پیدا کن، اون تیکه‌ای که به دلت نشست رو بردار و با بقیه شریک شو.',
-      searchPrompt:'جست‌وجوی آهنگ یا خواننده', searchPlaceholder:'اسم آهنگ یا خواننده', allSources:'همهٔ منبع‌ها', findLyrics:'بگرد', looking:'در حال جست‌وجو…',
+      searchPrompt:'جست‌وجوی آهنگ یا خواننده', searchPlaceholder:'اسم آهنگ یا خواننده', clearSearch:'پاک کردن جست‌وجو', allSources:'همهٔ منبع‌ها', findLyrics:'بگرد', looking:'در حال جست‌وجو…',
       tryExample:'مثلاً', orWord:'یا', suggestionDreams:'Mehrad Hidden - Dardesar', suggestionGetLucky:'Ghatle amd by Dorcci',
       homeKicker:'از اینجا شروع کنیم', homeTitle:'یه آهنگ پیدا کن، یه مصرع نگه دار.', searchingKicker:'داریم بین آهنگا می‌گردیم',
       lookingFor:'دنبال', foundKicker:'اینارو پیدا کردیم', oneMatch:'یه آهنگ پیدا شد، از اینجا شروع کنیم.', manyMatches:'کدومش همونیه که می‌خوای؟',
@@ -221,6 +222,7 @@
     document.querySelectorAll('[data-i18n-html]').forEach((node) => { node.innerHTML = t(node.dataset.i18nHtml); });
     document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder); });
     document.querySelectorAll('[data-i18n-aria]').forEach((node) => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => { node.title = t(node.dataset.i18nTitle); });
     const sampleButtons = document.querySelectorAll('.suggestion');
     if (sampleButtons[0]) sampleButtons[0].dataset.query = persian ? 'Mehrad Hidden - Dardesar' : 'Dreams Fleetwood Mac';
     if (sampleButtons[1]) sampleButtons[1].dataset.query = persian ? 'Ghatle amd by Dorcci' : 'Daft Punk Get Lucky';
@@ -233,6 +235,7 @@
     $('#search-input').setAttribute('aria-label', t('searchPlaceholder'));
     $('#provider-select').setAttribute('aria-label', t('searchSource'));
     $('#search-input').dir = 'auto';
+    clearSearchButton.hidden = !searchInput.value;
     snippetInput.dir = 'auto';
     $('#lyrics-text').dir = 'auto';
     $('#saved-count').textContent = localizedNumber(savedSongs.length);
@@ -1315,6 +1318,7 @@
     clearTimeout(searchDebounceTimer);
     const query = searchInput.value.trim();
     if (!query) { searchInput.focus(); return; }
+    clearSearchButton.hidden = false;
     currentResults = [];
     currentSong = null;
     moveResultsToSearchMenu();
@@ -1360,6 +1364,11 @@
   $('#x-button').addEventListener('click', postToX);
   $('#download-button').addEventListener('click', downloadCard);
   $('#copy-button').addEventListener('click', copySnippet);
+  clearSearchButton.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    searchInput.focus();
+  });
   lyricsNode.addEventListener('click', (event) => {
     const line = event.target.closest('.lyric-line');
     if (line && lyricsNode.contains(line)) toggleLyricLine(line);
@@ -1376,8 +1385,10 @@
   $('#dialog-ok').addEventListener('click', () => $('#about-dialog').close());
   $('#about-dialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
   searchInput.addEventListener('input', () => {
+    const wasInContentView = ['detail', 'saved', 'no-results', 'network-error'].includes(viewMode);
     clearTimeout(searchDebounceTimer);
     activeSearch += 1;
+    clearSearchButton.hidden = !searchInput.value;
     setBusy(false);
     setSearchResultsOpen(false);
     resultsNode.replaceChildren();
@@ -1392,6 +1403,7 @@
     viewMode = 'home';
     emptyMode = 'home';
     updateSectionText();
+    if (wasInContentView) window.scrollTo(0, 0);
     const query = searchInput.value.trim();
     if (query.length >= 2) {
       searchDebounceTimer = setTimeout(() => {

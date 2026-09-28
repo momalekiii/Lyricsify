@@ -13,8 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lrclib.net">
   <link rel="preconnect" href="https://api.lyrics.ovh">
-  <link rel="stylesheet" href="styles.css?v=warm17">
-  <script src="app.js?v=warm17" defer></script>
+  <link rel="stylesheet" href="styles.css?v=warm18">
+  <script src="app.js?v=warm18" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -39,6 +39,7 @@
           <div class="search-input-wrap">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4 4"></path></svg>
             <input id="search-input" name="q" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Search a song or artist" autocomplete="off" aria-controls="search-results-menu" aria-expanded="false">
+            <button id="clear-search" class="search-clear" type="button" aria-label="Clear search" title="Clear search" data-i18n-aria="clearSearch" data-i18n-title="clearSearch" hidden>×</button>
           </div>
           <select id="provider-select" aria-label="Search provider" hidden><option value="all">All sources</option></select>
         </div>
@@ -94,7 +95,7 @@
 <div><span class="eyebrow small-eyebrow" data-i18n="emptyEyebrow">YOUR NEXT FAVORITE LINE</span><h3 data-i18n="emptyTitle">It’s out there somewhere.</h3><p data-i18n="emptyIntro">Search a title, an artist, or that half-remembered lyric stuck in your head.</p></div>
         </div>
       </section>
-      <footer class="page-footer"><span>© 2026 · Developed with <span class="footer-heart" aria-label="love">❤️</span> by <bdi dir="ltr">@momalekiii</bdi></span></footer>
+      <footer class="page-footer"><span dir="ltr">© 2026 · Developed with <span class="footer-heart" aria-label="love">❤️</span> by <bdi dir="ltr">@momalekiii</bdi></span></footer>
 </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
