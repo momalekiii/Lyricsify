@@ -4,12 +4,17 @@
   const $ = (selector) => document.querySelector(selector);
   const searchForm = $('#search-form');
   const searchInput = $('#search-input');
+  const clearSearchButton = $('#clear-search');
   const providerSelect = $('#provider-select');
   const resultsNode = $('#results');
+  const searchResultsMenu = $('#search-results-menu');
+  const resultsSlot = $('#results-slot');
   const detailNode = $('#detail');
   const emptyNode = $('#empty-state');
   const noticeNode = $('#notice');
   const snippetInput = $('#snippet-input');
+  const lyricsNode = $('#lyrics-text');
+  const selectedLyricLines = new Set();
   const savedKey = 'lyricsify.saved.v1';
   let currentSong = null;
   let currentResults = [];
@@ -23,6 +28,9 @@
   let currentArtworkForCard = null;
   let currentArtworkSongId = null;
   let currentCoverRGB = null;
+  const shareBlobCache = new Map();
+  let shareBlobTimer;
+  let searchDebounceTimer;
 
   const readSaved = () => {
     try {
@@ -39,7 +47,7 @@
       yourSpace:'YOUR SPACE', discover:'Discover', savedSongs:'Saved songs', providerNote:'Two lyric sources, one little app.', about:'About',
       breadcrumb:'YOUR MUSIC, IN WORDS', findTheLine:'FIND THE LINE', heroTitle:'Songs say it<br><span>better.</span>',
       heroIntro:'Look up a song, find the words that hit, and make a little something worth sharing.',
-      searchPrompt:'What are we listening for?', searchPlaceholder:'Song, artist, or a lyric you remember…', allSources:'All sources', findLyrics:'Find lyrics', looking:'Looking…',
+      searchPrompt:'Search for a song or artist', searchPlaceholder:'Song or artist', clearSearch:'Clear search', allSources:'All sources', findLyrics:'Find lyrics', looking:'Searching…',
       tryExample:'Try', orWord:'or', suggestionDreams:'“Dreams” by Fleetwood Mac', suggestionGetLucky:'“Get Lucky” by Daft Punk',
       homeKicker:'A GOOD PLACE TO START', homeTitle:'Pick a song. Keep a line.', searchingKicker:'SEARCHING THE CATALOG',
       lookingFor:'Looking for', foundKicker:'FOUND IN THE CATALOG', oneMatch:'One song, one starting point.', manyMatches:'Which one sounds right?',
@@ -52,28 +60,28 @@
       networkKicker:'A SMALL INTERNET MOMENT', networkTitle:'Couldn’t reach the lyric sources.',
       networkHeading:'Let’s try that again.', networkCopy:'Check your connection and search again in a moment.',
       lyricsKicker:'THE WORDS BEHIND THE MUSIC', lyricsTitle:'Pick a line. Make it yours.', lyricsWord:'LYRICS',
-      lyricsUnavailable:'We found the song, but lyrics aren’t available from our lyric sources yet.', trackInfo:'TRACK INFO', trackInfoPrefix:'Track info: ', theLyrics:'THE LYRICS', selectTip:'Select 1–5 lines to make it yours',
+      lyricsUnavailable:'We found the song, but lyrics aren’t available from our lyric sources yet.', trackInfo:'TRACK INFO', trackInfoPrefix:'Track info: ', theLyrics:'THE LYRICS', selectTip:'Tap lines to select up to 10',
       makeItYours:'MAKE IT YOURS', snippetTitle:'A line worth keeping.',
       snippetIntro:'Select a lyric, or write your own excerpt below. Then turn it into a shareable card.',
       snippetPlaceholder:'Your favorite line will show up here…', cardMood:'CARD MOOD', moodLavender:'Lavender', moodRose:'Rose', moodMist:'Mist',
       shareCard:'Share card', instagram:'Instagram', story:'Story', post:'Post', postToX:'Post to X', downloadImage:'Download image', copyText:'Copy text',
-      shareFootnote:'Choose Story or Post, then tap Instagram in your phone’s share sheet. If image sharing isn’t supported, the image downloads and Instagram opens so you can upload it.',
+      shareFootnote:'Your caption includes “by Lyricsify”. Choose Instagram Story/Post or X in your phone’s share sheet. If image sharing isn’t supported, the image downloads; X opens a prefilled composer and Instagram opens for manual upload.',
       emptyEyebrow:'YOUR NEXT FAVORITE LINE', emptyTitle:'It’s out there somewhere.',
       emptyIntro:'Search a title, an artist, or that half-remembered lyric stuck in your head.',
       savedKicker:'YOUR LITTLE COLLECTION', savedTitle:'Songs you wanted to keep.',
       savedEmptyTitle:'Nothing saved just yet.', savedEmptyCopy:'Find a song you love and tap the little heart to keep it close.',
       viewDiscover:'DISCOVER', viewSaved:'SAVED SONGS', savedCount:'SAVED', match:'MATCH', matches:'MATCHES',
       madeWithLove:'Made with love by', rightsFooter:'Lyrics and cover artwork remain the property of their respective owners.',
-      sourceNote:'A NOTE ON SOURCES', aboutTitle:'Lyricsify is a little window, not a lyrics archive.',
+      sourceNote:'ABOUT LYRICSIFY', aboutTitle:'Lyricsify finds the lines that stay with you.',
       aboutSources:'Searches use <a href="https://lrclib.net" target="_blank" rel="noreferrer">LRCLIB</a> and <a href="https://lyrics.ovh" target="_blank" rel="noreferrer">Lyrics.ovh</a>. Availability depends on each source. We don’t store a central lyrics catalog; saved songs stay in this browser.',
       aboutArtwork:'Album artwork comes from Apple’s iTunes Search API. A CORS image proxy may be used to include the cover in share-card exports; artwork remains the property of its artists and rights holders.',
-      aboutSharing:'Share cards are generated on your device. X opens a prepared post; Instagram offers Story and Post sizes in your device’s share menu.',
+      aboutSharing:'Share cards are made on your device. On phones, use the share sheet to send the image and prefilled caption to X or Instagram. If image sharing is unavailable, X opens its composer with the text and the image downloads; Instagram opens for manual upload. You always confirm the post in the social app.',
       gotIt:'Got it', close:'Close', darkMode:'Dark mode', lightMode:'Light mode', switchToPersian:'Switch to Persian', switchToEnglish:'Switch to English',
       charCount:'{count} / 280 for X', searchSource:'Search provider', albumLabel:'Album', profileSpotify:'Find {artist} on Spotify', profileSoundcloud:'Find {artist} on SoundCloud',
-      resultLabel:'{title} by {artist}, from {provider}', saveSong:'Save song', removeSaved:'Remove saved song',
-      shareTitle:'{title} by {artist}', shareCredit:'— {title} by {artist}', copyFormat:'“{snippet}” — {title} by {artist}', xSharePrefix:'A lyric I love: ', xComposerReady:'Opening X with your selected line.', instagramShareReady:'Image sent to the share sheet. Finish posting in Instagram.',
+      resultLabel:'{title} by {artist}, from {provider}', saveSong:'Save song', removeSaved:'Remove saved song', saveAction:'Save', savedAction:'Saved',
+      shareTitle:'{title} by {artist}', shareCredit:'— {title} by {artist}', shareAppCredit:'— by Lyricsify', copyFormat:'“{snippet}” — {title} by {artist}', xSharePrefix:'A lyric I love: ', xComposerReady:'Opening X with your selected line.', xShareReady:'Share sheet opened with your lyric image and text. Choose X to post.', xImageFallback:'Your image is downloading; X is opening with your text. Attach the image before posting.', instagramShareReady:'Image sent to the share sheet. Finish posting in Instagram.',
       savedToast:'Saved for later.', removedToast:'Removed from your saved songs.', saveError:'Could not save in this browser.',
-      emptySnippet:'Select a line or add a snippet first.', longSelection:'That’s a long one — trimmed to 500 characters.', tooManyLines:'Please select 1–5 lines. The extra lines were removed.',
+      emptySnippet:'Select a line or add a snippet first.', longSelection:'That’s a long one — trimmed to 500 characters.', tooManyLines:'You can select up to 10 lines. Remove one to choose another.',
       imageError:'Couldn’t make the image. Try another browser.', cardReady:'Your lyric card is ready.',
       copied:'Snippet copied with song credit.', copyFailed:'Couldn’t copy automatically — select and copy the text.',
       sharingFailed:'Sharing unavailable — image downloaded.', sourceAttribution:' · lyrics are owned by their respective writers and publishers.',
@@ -81,10 +89,10 @@
       instagramStoryDownloaded:'Instagram Story image downloaded — ready to share.', instagramPostDownloaded:'Instagram Post image downloaded — ready to share.',
     },
     fa: {
-      yourSpace:'گوشهٔ تو', discover:'خانه', savedSongs:'آهنگای ذخیره‌شده', providerNote:'دو تا منبع ترانه، یه جا.', about:'درباره',
+      yourSpace:'گوشهٔ تو', discover:'خانه', savedSongs:'آهنگای ذخیره‌شده', providerNote:'دو تا منبع ترانه، یه جا.', about:'درباره‌مون',
       breadcrumb:'موسیقی و حرفایی که می‌مونه', findTheLine:'اون مصرعو پیدا کن', heroTitle:'بعضی آهنگا<br><span>به‌جات حرف می‌زنن.</span>',
       heroIntro:'اسم آهنگو پیدا کن، اون تیکه‌ای که به دلت نشست رو بردار و با بقیه شریک شو.',
-      searchPrompt:'دنبال چی بگردیم؟', searchPlaceholder:'اسم آهنگ، خواننده یا یه تیکه از ترانه…', allSources:'همهٔ منبع‌ها', findLyrics:'بگرد', looking:'داریم می‌گردیم…',
+      searchPrompt:'جست‌وجوی آهنگ یا خواننده', searchPlaceholder:'اسم آهنگ یا خواننده', clearSearch:'پاک کردن جست‌وجو', allSources:'همهٔ منبع‌ها', findLyrics:'بگرد', looking:'در حال جست‌وجو…',
       tryExample:'مثلاً', orWord:'یا', suggestionDreams:'Mehrad Hidden - Dardesar', suggestionGetLucky:'Ghatle amd by Dorcci',
       homeKicker:'از اینجا شروع کنیم', homeTitle:'یه آهنگ پیدا کن، یه مصرع نگه دار.', searchingKicker:'داریم بین آهنگا می‌گردیم',
       lookingFor:'دنبال', foundKicker:'اینارو پیدا کردیم', oneMatch:'یه آهنگ پیدا شد، از اینجا شروع کنیم.', manyMatches:'کدومش همونیه که می‌خوای؟',
@@ -96,29 +104,29 @@
       timeoutError:'منبع‌ها دیر جواب دادن؛ یه بار دیگه امتحان کن.',
       networkKicker:'اینترنت یه لحظه قاطی کرد', networkTitle:'الان به منبع ترانه وصل نمی‌شیم.',
       networkHeading:'دوباره امتحان کنیم؟', networkCopy:'اینترنت رو چک کن و چند لحظه دیگه دوباره بگرد.',
-      lyricsKicker:'یه حرفایی فقط تو آهنگ ها هستش', lyricsTitle:'یه خط رو انتخاب کن، برای خودت نگهش دار.', lyricsWord:'متن ترانه',
-      lyricsUnavailable:'آهنگ رو پیدا کردیم، ولی متنش فعلاً توی منبع‌های ما نیست.', trackInfo:'جزئیات آهنگ', trackInfoPrefix:'اطلاعات آهنگ: ', theLyrics:'متن ترانه', selectTip:'۱ تا ۵ خط رو انتخاب کن تا نگهش داری',
+      lyricsKicker:'حرفایی که توی آهنگا می‌مونه', lyricsTitle:'یه مصرع انتخاب کن، برای خودت نگهش دار.', lyricsWord:'متن ترانه',
+      lyricsUnavailable:'آهنگ رو پیدا کردیم، ولی متنش فعلاً توی منبع‌های ما نیست.', trackInfo:'جزئیات آهنگ', trackInfoPrefix:'اطلاعات آهنگ: ', theLyrics:'متن ترانه', selectTip:'برای انتخاب، روی خط‌ها بزن؛ تا ۱۰ خط',
       makeItYours:'مال خودت کن', snippetTitle:'یه خط که به دل می‌شینه.',
       snippetIntro:'یه تیکه از ترانه رو انتخاب کن یا خودت بنویس؛ بعد ازش یه کارت بساز و بفرست.',
-      snippetPlaceholder:'اون خطی که دوست داری…', cardMood:'حال‌وهوای کارت', moodLavender:'یاسی', moodRose:'رز', moodMist:'مه‌آلود',
+      snippetPlaceholder:'اون مصرعی که دوست داری…', cardMood:'حال‌وهوای کارت', moodLavender:'یاسی', moodRose:'رز', moodMist:'مه‌آلود',
       shareCard:'کارتو بفرست', instagram:'اینستاگرام', story:'استوری', post:'پست', postToX:'بفرست توی X', downloadImage:'دانلود تصویر', copyText:'کپی متن',
-      shareFootnote:'استوری یا پست رو انتخاب کن و بعد توی منوی اشتراک‌گذاری گوشیت اینستاگرام رو بزن. اگه نشد، تصویر دانلود می‌شه و اینستاگرام رو باز می‌کنیم تا خودت بارگذاریش کنی.',
+      shareFootnote:'کپشن با عبارت «با Lyricsify» آماده می‌شه. از منوی گوشیت استوری/پست اینستاگرام یا X رو انتخاب کن. اگر تصویر قابل‌اشتراک‌گذاری نبود، دانلود می‌شه.',
       emptyEyebrow:'مصرع بعدیِ محبوبت', emptyTitle:'یه جایی منتظرته.',
       emptyIntro:'اسم آهنگ یا خواننده رو بزن، یا همون تیکه‌ای که از ذهنت بیرون نمی‌ره.',
-      savedKicker:'پوشه آهنگای تو', savedTitle:'آهنگایی که دوستشون داشتی.',
-      savedEmptyTitle:'هنوز چیزی رو دوست نداشتی.', savedEmptyCopy:'یه آهنگ پیدا کن و قلبشو بزن تا اینجا بمونه.',
+      savedKicker:'گوشهٔ آهنگای تو', savedTitle:'آهنگایی که نگه داشتی.',
+      savedEmptyTitle:'هنوز چیزی نگه نداشتی.', savedEmptyCopy:'یه آهنگ پیدا کن و قلبشو بزن تا اینجا بمونه.',
       viewDiscover:'خانه', viewSaved:'ذخیره‌شده‌ها', savedCount:'تا', match:'نتیجه', matches:'نتیجه',
-      madeWithLove:'با عشق ساخته شده توسط', rightsFooter:'ترانه‌ها و عکس جلد موزیک واسه صاحب آثار هستش.',
-      sourceNote:'یه توضیح دربارهٔ منبع‌ها', aboutTitle:'Lyricsify یه پنجرهٔ کوچیکه، نه آرشیو ترانه‌ها.',
+      madeWithLove:'با عشق ساخته شده توسط', rightsFooter:'ترانه‌ها و عکس جلد مال صاحب‌هاشونه.',
+      sourceNote:'دربارهٔ Lyricsify', aboutTitle:'Lyricsify مصرع‌هایی رو پیدا می‌کنه که باهات می‌مونن.',
       aboutSources:'برای جست‌وجو از <a href="https://lrclib.net" target="_blank" rel="noreferrer">LRCLIB</a> و <a href="https://lyrics.ovh" target="_blank" rel="noreferrer">Lyrics.ovh</a> کمک می‌گیریم. پیدا شدن آهنگ به منبعش بستگی داره. آهنگ‌های ذخیره‌شده فقط توی همین مرورگر می‌مونن.',
       aboutArtwork:'عکس جلد از جست‌وجوی موسیقی Apple میاد. برای گذاشتنش روی کارت ممکنه تصویر از یه پراکسی سازگار با CORS رد بشه؛ عکس مال هنرمندها و صاحبان حقشه.',
-      aboutSharing:'کارت روی گوشی یا کامپیوتر خودت ساخته می‌شه. X پیش‌نویس پست رو باز می‌کنه و برای اینستاگرام می‌تونی اندازهٔ استوری یا پست رو انتخاب کنی.',
+      aboutSharing:'کارت روی گوشی یا کامپیوتر خودت ساخته می‌شه. روی گوشی از منوی اشتراک‌گذاری، تصویر و کپشن آماده رو به X یا اینستاگرام بفرست. اگه نشد، متن آماده توی X باز می‌شه و تصویر دانلود می‌شه؛ اینستاگرام رو هم برای بارگذاری دستی باز می‌کنیم. انتشار رو همیشه خودت توی برنامهٔ شبکهٔ اجتماعی تأیید می‌کنی.',
       gotIt:'باشه', close:'بستن', darkMode:'تم تیره', lightMode:'تم روشن', switchToPersian:'رفتن به فارسی', switchToEnglish:'برگشت به انگلیسی',
       charCount:'{count} / ۲۸۰ برای X', searchSource:'منبع جست‌وجو', albumLabel:'آلبوم', profileSpotify:'پیدا کردن {artist} توی Spotify', profileSoundcloud:'پیدا کردن {artist} توی SoundCloud',
-      resultLabel:'{title} از {artist} · {provider}', saveSong:'ذخیرهٔ آهنگ', removeSaved:'برداشتن از ذخیره‌شده‌ها',
-      shareTitle:'{title} از {artist}', shareCredit:'— {title} از {artist}', copyFormat:'«{snippet}» — {title} از {artist}', xSharePrefix:'یه مصرع که دوستش دارم: ', xComposerReady:'پست با مصرعت رو توی X باز می‌کنیم.', instagramShareReady:'تصویر به منوی اشتراک‌گذاری فرستاده شد؛ انتشارش رو توی اینستاگرام کامل کن.',
+      resultLabel:'{title} از {artist} · {provider}', saveSong:'ذخیرهٔ آهنگ', removeSaved:'برداشتن از ذخیره‌شده‌ها', saveAction:'ذخیره', savedAction:'ذخیره شد',
+      shareTitle:'{title} از {artist}', shareCredit:'— {title} از {artist}', shareAppCredit:'— با Lyricsify', copyFormat:'«{snippet}» — {title} از {artist}', xSharePrefix:'یه مصرع که دوستش دارم: ', xComposerReady:'پست با مصرعت رو توی X باز می‌کنیم.', xShareReady:'منوی اشتراک‌گذاری با تصویر و متن باز شد؛ X رو برای انتشار انتخاب کن.', xImageFallback:'تصویر داره دانلود می‌شه و متن در X باز می‌شه؛ قبل از انتشار، تصویر رو ضمیمه کن.', instagramShareReady:'تصویر به منوی اشتراک‌گذاری فرستاده شد؛ انتشارش رو توی اینستاگرام کامل کن.',
       savedToast:'باشه، برای بعد نگهش داشتیم.', removedToast:'از آهنگای ذخیره‌شده برداشتیم.', saveError:'توی این مرورگر ذخیره نشد.',
-      emptySnippet:'اول یه مصرع انتخاب کن یا بنویس.', longSelection:'این یکی طولانی بود؛ تا ۵۰۰ نویسه کوتاهش کردیم.', tooManyLines:'بیشتر از ۵ خط انتخاب کردی؛ پنج خط اول موند.',
+      emptySnippet:'اول یه مصرع انتخاب کن یا بنویس.', longSelection:'این یکی طولانی بود؛ تا ۵۰۰ نویسه کوتاهش کردیم.', tooManyLines:'حداکثر ۱۰ خط؛ برای انتخاب خط تازه، اول یکی رو بردار.',
       imageError:'تصویر ساخته نشد؛ با یه مرورگر دیگه امتحان کن.', cardReady:'کارتت آماده‌ست.',
       copied:'متن و اسم آهنگ کپی شد.', copyFailed:'کپی نشد؛ خودت متن رو انتخاب و کپی کن.',
       sharingFailed:'اشتراک‌گذاری نشد؛ تصویر رو دانلود کردیم.', sourceAttribution:' · متن ترانه مال نویسنده‌ها و ناشرهاشه.',
@@ -144,7 +152,18 @@
     return currentLanguage === 'fa' ? String(value).replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]) : String(value);
   }
 
+  function isRtlText(value, fallback = currentLanguage === 'fa') {
+    const rtlRange = /[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufeff]/;
+    const ltrRange = /[A-Za-z\u00c0-\u02af]/;
+    for (const character of String(value || '')) {
+      if (rtlRange.test(character)) return true;
+      if (ltrRange.test(character)) return false;
+    }
+    return fallback;
+  }
+
   function updateSectionText() {
+    document.documentElement.dataset.view = viewMode;
     const kicker = $('#section-kicker');
     const title = $('#section-title');
     const query = searchInput.value.trim();
@@ -163,10 +182,18 @@
     if (viewMode === 'searching') title.textContent = `${t('lookingFor')} “${query}”`;
     else if (viewMode === 'saved' && !savedSongs.length) title.textContent = t('savedEmptyTitle');
     else title.textContent = t(titleKey);
-    $('#view-label').textContent = document.querySelector('.nav-link.active')?.dataset.view === 'saved' ? t('viewSaved') : t('viewDiscover');
+    const viewLabel = $('#view-label');
+    if (viewLabel) viewLabel.textContent = viewMode === 'saved' ? t('viewSaved') : t('viewDiscover');
     const count = $('#result-count');
-    if (viewMode === 'saved') count.textContent = savedSongs.length ? `${localizedNumber(savedSongs.length)} ${t('savedCount')}` : '';
-    else if (viewMode === 'results' || viewMode === 'detail') count.textContent = currentResults.length ? `${localizedNumber(currentResults.length)} ${t(currentResults.length === 1 ? 'match' : 'matches')}` : '';
+    const savedCount = $('#saved-result-count');
+    const menuTitle = $('#search-menu-title');
+    count.textContent = (viewMode === 'results' || viewMode === 'detail') && currentResults.length
+      ? `${localizedNumber(currentResults.length)} ${t(currentResults.length === 1 ? 'match' : 'matches')}` : '';
+    savedCount.textContent = viewMode === 'saved' && savedSongs.length
+      ? `${localizedNumber(savedSongs.length)} ${t('savedCount')}` : '';
+    menuTitle.textContent = viewMode === 'searching'
+      ? `${t('lookingFor')} “${query}”`
+      : viewMode === 'results' ? t(currentResults.length === 1 ? 'oneMatch' : 'manyMatches') : '';
   }
 
   function updateEmptyText() {
@@ -195,18 +222,20 @@
     document.querySelectorAll('[data-i18n-html]').forEach((node) => { node.innerHTML = t(node.dataset.i18nHtml); });
     document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder); });
     document.querySelectorAll('[data-i18n-aria]').forEach((node) => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => { node.title = t(node.dataset.i18nTitle); });
     const sampleButtons = document.querySelectorAll('.suggestion');
     if (sampleButtons[0]) sampleButtons[0].dataset.query = persian ? 'Mehrad Hidden - Dardesar' : 'Dreams Fleetwood Mac';
     if (sampleButtons[1]) sampleButtons[1].dataset.query = persian ? 'Ghatle amd by Dorcci' : 'Daft Punk Get Lucky';
     const languageButton = $('#language-toggle');
-    languageButton.textContent = persian ? 'EN' : 'فا';
+    languageButton.textContent = persian ? 'FA' : 'EN';
+    $('#about-button').title = t('about');
     languageButton.setAttribute('aria-label', t(persian ? 'switchToEnglish' : 'switchToPersian'));
     languageButton.title = t(persian ? 'switchToEnglish' : 'switchToPersian');
-    $('#theme-toggle .theme-label').textContent = t(document.documentElement.dataset.theme === 'dark' ? 'lightMode' : 'darkMode');
+    $('#theme-toggle .theme-label').textContent = t(document.documentElement.dataset.theme === 'dark' ? 'darkMode' : 'lightMode');
     $('#search-input').setAttribute('aria-label', t('searchPlaceholder'));
     $('#provider-select').setAttribute('aria-label', t('searchSource'));
-    $('#card-theme').setAttribute('aria-label', t('cardMood'));
     $('#search-input').dir = 'auto';
+    clearSearchButton.hidden = !searchInput.value;
     snippetInput.dir = 'auto';
     $('#lyrics-text').dir = 'auto';
     $('#saved-count').textContent = localizedNumber(savedSongs.length);
@@ -214,6 +243,7 @@
     updateEmptyText();
     updateSnippetCount();
     if (currentSong) {
+      updateFavoriteButton();
       updateSongLanguageText();
       updateAlbumDetails(currentSong);
     }
@@ -239,18 +269,31 @@
     const dark = theme === 'dark';
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     const themeMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeMeta) themeMeta.content = dark ? '#191919' : '#d8d8d8';
+    if (themeMeta) themeMeta.content = dark ? '#121212' : '#f7f7f7';
     const button = $('#theme-toggle');
     button.setAttribute('aria-pressed', String(dark));
     button.setAttribute('aria-label', t(dark ? 'lightMode' : 'darkMode'));
-    button.querySelector('.theme-icon').textContent = dark ? '☼' : '◐';
-    button.querySelector('.theme-label').textContent = t(dark ? 'lightMode' : 'darkMode');
+    const label = button.querySelector('.theme-label');
+    if (label) label.textContent = t(dark ? 'darkMode' : 'lightMode');
   }
 
-  let savedTheme = 'light';
-  try { savedTheme = localStorage.getItem('lyricsify.theme.v1') || 'light'; } catch (_) { /* storage is optional */ }
+  let savedTheme = 'dark';
+  try { savedTheme = localStorage.getItem('lyricsify.theme.v1') || 'dark'; } catch (_) { /* storage is optional */ }
   applyTheme(savedTheme);
   applyLanguage(currentLanguage);
+
+  function moveResultsToSearchMenu() {
+    if (resultsNode.parentElement !== searchResultsMenu) searchResultsMenu.append(resultsNode);
+  }
+
+  function moveResultsToSavedSlot() {
+    if (resultsNode.parentElement !== resultsSlot) resultsSlot.append(resultsNode);
+  }
+
+  function setSearchResultsOpen(open) {
+    searchResultsMenu.hidden = !open;
+    searchInput.setAttribute('aria-expanded', String(open));
+  }
 
   function setNotice(message = '') {
     noticeNode.textContent = message;
@@ -259,10 +302,7 @@
 
   function setBusy(busy) {
     $('.results-section').setAttribute('aria-busy', String(busy));
-    const button = searchForm.querySelector('button[type="submit"]');
-    button.disabled = busy;
-    button.classList.toggle('busy', busy);
-    $('#search-button-label').textContent = t(busy ? 'looking' : 'findLyrics');
+    searchInput.setAttribute('aria-busy', String(busy));
   }
 
   function normalizeSong(song) {
@@ -508,7 +548,12 @@
     resetCoverTheme();
     setBusy(true);
     setNotice('');
+    moveResultsToSearchMenu();
     resultsNode.replaceChildren();
+    resultsNode.hidden = true;
+    setSearchResultsOpen(true);
+    $('#search-menu-status').textContent = t('looking');
+    $('#search-menu-status').hidden = false;
     detailNode.hidden = true;
     emptyNode.hidden = true;
     $('#result-count').textContent = '';
@@ -569,6 +614,8 @@
         currentResults = [...merged.values()];
       }
       if (!currentResults.length) {
+        setSearchResultsOpen(false);
+        $('#search-menu-status').hidden = true;
         viewMode = 'no-results';
         emptyMode = 'no-results';
         updateSectionText();
@@ -582,10 +629,13 @@
       if (errors.some((error) => error.status === 429) && !currentResults.some((song) => song.lyrics)) setNotice(t('rateLimitError'));
       viewMode = 'results';
       updateSectionText();
+      $('#search-menu-status').hidden = true;
       renderResults(currentResults);
-      if (currentResults.length === 1) showSong(currentResults[0]);
+      setSearchResultsOpen(currentResults.length > 0);
     } catch (error) {
       if (searchId !== activeSearch) return;
+      setSearchResultsOpen(false);
+      $('#search-menu-status').hidden = true;
       viewMode = 'network-error';
       emptyMode = 'network-error';
       updateSectionText();
@@ -604,6 +654,7 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'result-card';
+      button.dir = 'auto';
       button.style.setProperty('--card-delay', `${Math.min(index, 10) * 42}ms`);
       button.setAttribute('aria-label', interpolate(t('resultLabel'), { title: song.title, artist: song.artist, provider: song.provider }));
       const cover = document.createElement('span');
@@ -625,14 +676,12 @@
       info.className = 'result-info';
       const title = document.createElement('strong');
       title.textContent = song.title;
+      title.dir = 'auto';
       const artist = document.createElement('span');
       artist.textContent = `${song.artist} · ${song.provider}`;
+      artist.dir = 'auto';
       info.append(title, artist);
-      const arrow = document.createElement('span');
-      arrow.className = 'result-arrow';
-      arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '↗';
-      button.append(cover, info, arrow);
+      button.append(cover, info);
       button.addEventListener('click', () => showSong(song));
       resultsNode.append(button);
     });
@@ -662,8 +711,8 @@
         red += pixels[index]; green += pixels[index + 1]; blue += pixels[index + 2]; count += 1;
       }
       if (!count) return resetCoverTheme();
-      const soften = (value) => Math.round((value / count) * .82 + 128 * .18);
-      currentCoverRGB = [soften(red), soften(green), soften(blue)];
+      const average = (value) => Math.round(value / count);
+      currentCoverRGB = [average(red), average(green), average(blue)];
       const rgb = currentCoverRGB.join(', ');
       document.documentElement.style.setProperty('--cover-glow-light', `rgba(${rgb}, .30)`);
       document.documentElement.style.setProperty('--cover-glow-dark', `rgba(${rgb}, .36)`);
@@ -674,8 +723,63 @@
 
   function updateAlbumDetails(song) {
     const albumNode = $('#detail-album');
+    albumNode.dir = 'auto';
     albumNode.textContent = song.album ? `${t('albumLabel')}: ${song.album}` : '';
     albumNode.hidden = !song.album;
+  }
+
+  function clearLyricLineSelection() {
+    selectedLyricLines.clear();
+    lyricsNode.querySelectorAll('.lyric-line.is-selected').forEach((line) => {
+      line.classList.remove('is-selected');
+      line.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function renderLyricLines(song) {
+    lyricsNode.replaceChildren();
+    selectedLyricLines.clear();
+    if (!song.lyrics || !song.lyrics.trim()) {
+      const message = document.createElement('p');
+      message.className = 'lyrics-unavailable';
+      message.textContent = t('lyricsUnavailable');
+      lyricsNode.append(message);
+      return;
+    }
+    song.lyrics.split(/\r\n?|\n/).forEach((text, index) => {
+      if (!text.trim()) {
+        const gap = document.createElement('div');
+        gap.className = 'lyric-gap';
+        gap.setAttribute('aria-hidden', 'true');
+        lyricsNode.append(gap);
+        return;
+      }
+      const line = document.createElement('button');
+      line.type = 'button';
+      line.className = 'lyric-line';
+      line.dataset.lineIndex = String(index);
+      line.textContent = text;
+      line.dir = 'auto';
+      line.setAttribute('aria-pressed', 'false');
+      line.setAttribute('aria-label', text);
+      lyricsNode.append(line);
+    });
+  }
+
+  function toggleLyricLine(line) {
+    if (!currentSong || !currentSong.lyrics) return;
+    const index = Number(line.dataset.lineIndex);
+    if (selectedLyricLines.has(index)) selectedLyricLines.delete(index);
+    else if (selectedLyricLines.size >= 10) {
+      toast(t('tooManyLines'), 'error');
+      return;
+    } else selectedLyricLines.add(index);
+    const selected = selectedLyricLines.has(index);
+    line.classList.toggle('is-selected', selected);
+    line.setAttribute('aria-pressed', String(selected));
+    const lines = currentSong.lyrics.split(/\r\n?|\n/);
+    snippetInput.value = [...selectedLyricLines].sort((a, b) => a - b).map((lineIndex) => lines[lineIndex]).join('\n');
+    updateSnippetCount();
   }
 
   function showSong(song) {
@@ -684,9 +788,12 @@
     updateSectionText();
     detailNode.hidden = false;
     emptyNode.hidden = true;
-    resultsNode.hidden = resultsNode.children.length <= 1;
+    setSearchResultsOpen(false);
+    resultsNode.hidden = true;
     $('#detail-title').textContent = song.title;
+    $('#detail-title').dir = 'auto';
     $('#detail-artist').textContent = song.artist;
+    $('#detail-artist').dir = 'auto';
     updateAlbumDetails(song);
     const artistLinks = $('#artist-links');
     artistLinks.replaceChildren();
@@ -699,11 +806,12 @@
       profileLink.href = service.url;
       profileLink.target = '_blank';
       profileLink.rel = 'noreferrer';
+      profileLink.dir = 'ltr';
       profileLink.textContent = service.name;
       profileLink.setAttribute('aria-label', interpolate(t(service.name === 'Spotify' ? 'profileSpotify' : 'profileSoundcloud'), { artist: song.artist }));
       artistLinks.append(profileLink);
     });
-    $('#lyrics-text').textContent = song.lyrics || t('lyricsUnavailable');
+    renderLyricLines(song);
     const coverImage = $('#detail-cover');
     coverImage.hidden = true;
     coverImage.removeAttribute('src');
@@ -738,6 +846,7 @@
   function updateSongLanguageText() {
     if (!currentSong) return;
     const hasLyrics = Boolean(currentSong.lyrics && currentSong.lyrics.trim());
+    if (!hasLyrics) renderLyricLines(currentSong);
     $('#detail-source').textContent = `${currentSong.provider.toUpperCase()} · ${t(hasLyrics ? 'lyricsWord' : 'trackInfo')}`;
     const attribution = $('#attribution');
     attribution.replaceChildren(document.createTextNode(t(hasLyrics ? 'sourcePrefix' : 'trackInfoPrefix')));
@@ -759,7 +868,7 @@
     const isSaved = currentSong && savedSongs.some((song) => song.id === currentSong.id);
     const button = $('#favorite-button');
     button.classList.toggle('saved', Boolean(isSaved));
-    button.textContent = isSaved ? '♥' : '♡';
+    button.querySelector('.favorite-label').textContent = t(isSaved ? 'savedAction' : 'saveAction');
     button.setAttribute('aria-label', t(isSaved ? 'removeSaved' : 'saveSong'));
     button.title = t(isSaved ? 'removeSaved' : 'saveSong');
   }
@@ -786,6 +895,8 @@
     document.querySelectorAll('.nav-link').forEach((link) => link.classList.toggle('active', link.dataset.view === 'saved'));
     viewMode = 'saved';
     emptyMode = 'saved-empty';
+    setSearchResultsOpen(false);
+    moveResultsToSavedSlot();
     updateSectionText();
     detailNode.hidden = true;
     emptyNode.hidden = savedSongs.length > 0;
@@ -800,11 +911,13 @@
 
   function showHome() {
     document.querySelectorAll('.nav-link').forEach((link) => link.classList.toggle('active', link.dataset.view === 'home'));
+    moveResultsToSearchMenu();
     if (currentResults.length) {
       viewMode = currentSong ? 'detail' : 'results';
       updateSectionText();
       renderResults(currentResults);
-      resultsNode.hidden = currentResults.length <= 1;
+      resultsNode.hidden = Boolean(currentSong);
+      setSearchResultsOpen(!currentSong && currentResults.length > 0);
       detailNode.hidden = !currentSong;
       emptyNode.hidden = true;
     } else {
@@ -812,6 +925,7 @@
       emptyMode = 'home';
       updateSectionText();
       updateEmptyText();
+      setSearchResultsOpen(false);
       resultsNode.hidden = true;
       detailNode.hidden = true;
       emptyNode.hidden = false;
@@ -824,7 +938,7 @@
     let lineCount = 0;
     let endIndex = lines.length;
     for (let index = 0; index < lines.length; index += 1) {
-      if (lines[index].trim() && ++lineCount > 5) {
+      if (lines[index].trim() && ++lineCount > 10) {
         endIndex = index;
         break;
       }
@@ -847,16 +961,6 @@
     else preview.hidden = true;
   }
 
-  function useSelectedLyric() {
-    const selection = window.getSelection();
-    const text = selection && selection.toString().trim();
-    if (!text || !currentSong || !currentSong.lyrics || !$('#lyrics-text').contains(selection.anchorNode)) return;
-    const limited = clampSnippetLines(text);
-    snippetInput.value = limited.value.slice(0, 500);
-    updateSnippetCount();
-    if (limited.truncated) toast(t('tooManyLines'), 'error');
-    else if (text.length > 500) toast(t('longSelection'));
-  }
 
   function wrapText(context, text, maxWidth) {
     const words = text.split(/\s+/);
@@ -875,7 +979,51 @@
     return lines;
   }
 
-  function drawCard(format = cardFormat) {
+  function shareCardKey(format) {
+    return JSON.stringify([
+      currentSong && currentSong.id,
+      format,
+      snippetInput.value.trim(),
+      currentLanguage,
+      currentArtworkForCard && currentArtworkForCard.src,
+      currentCoverRGB,
+    ]);
+  }
+
+  function scheduleShareBlob(canvas, format) {
+    const key = shareCardKey(format);
+    clearTimeout(shareBlobTimer);
+    shareBlobCache.clear();
+    shareBlobTimer = setTimeout(() => {
+      canvas.toBlob((blob) => {
+        if (!blob || shareCardKey(format) !== key) return;
+        shareBlobCache.set(key, blob);
+      }, 'image/png');
+    }, 120);
+  }
+
+  function primeShareBlobs() {
+    if (!currentSong || !snippetInput.value.trim()) return;
+    clearTimeout(shareBlobTimer);
+    const songId = currentSong.id;
+    const snippet = snippetInput.value.trim();
+    const originalFormat = cardFormat;
+    const pending = ['post', 'story'].map((format) => {
+      const canvas = drawCard(format, false);
+      const key = shareCardKey(format);
+      return new Promise((resolve) => canvas.toBlob((blob) => resolve({ format, key, blob }), 'image/png'));
+    });
+    drawCard(originalFormat, false);
+    Promise.all(pending).then((results) => {
+      if (!currentSong || currentSong.id !== songId || snippetInput.value.trim() !== snippet) return;
+      shareBlobCache.clear();
+      results.forEach(({ format, key, blob }) => {
+        if (blob && shareCardKey(format) === key) shareBlobCache.set(key, blob);
+      });
+    });
+  }
+
+  function drawCard(format = cardFormat, cacheShare = true) {
     cardFormat = format;
     const canvas = $('#share-canvas');
     const story = format === 'story';
@@ -888,35 +1036,21 @@
     const persian = currentLanguage === 'fa';
     const edge = persian ? canvas.width - 88 : 88;
     const align = persian ? 'right' : 'left';
-    const sansFont = persian ? 'Vazirmatn, sans-serif' : 'Inter, Segoe UI, Arial, sans-serif';
-    const lyricFont = persian ? 'Vazirmatn, sans-serif' : 'Inter, Segoe UI, Arial, sans-serif';
+    const sansFont = persian ? 'Vazirmatn, Tahoma, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif';
     ctx.direction = persian ? 'rtl' : 'ltr';
     ctx.textAlign = align;
-    const moods = {
-      plum: { top: '#383252', bottom: '#181725', accent: '#e2dcff', secondary: '#a398d8', text: '#f8f6ff', muted: '#c9c2df' },
-      sunset: { top: '#64485d', bottom: '#281d30', accent: '#f5d9e8', secondary: '#ce8fac', text: '#fff6fa', muted: '#dac4d3' },
-      paper: { top: '#eef0ff', bottom: '#d4e9e8', accent: '#514b83', secondary: '#a5c2d8', text: '#29283e', muted: '#69677f' },
+    const coverBase = currentCoverRGB || [72, 72, 72];
+    const shadeCover = (factor) => coverBase.map((channel) => Math.round(channel * factor));
+    const toRgb = (channels) => `rgb(${channels.join(', ')})`;
+    const theme = {
+      accent: toRgb(shadeCover(.62)), text: '#f7f7f7', muted: '#b3b3b3',
     };
-    const theme = moods[$('#card-theme').value] || moods.plum;
-    const tintCardColor = (hex, amount) => {
-      if (!currentCoverRGB) return hex;
-      const channels = hex.match(/[a-f\d]{2}/gi)?.map((channel) => parseInt(channel, 16));
-      if (!channels || channels.length < 3) return hex;
-      const mixed = channels.map((channel, index) => Math.round(channel * (1 - amount) + currentCoverRGB[index] * amount));
-      return `rgb(${mixed.join(', ')})`;
-    };
-    const gradient = ctx.createLinearGradient(0, 0, 900, height);
-    gradient.addColorStop(0, tintCardColor(theme.top, .28));
-    gradient.addColorStop(1, tintCardColor(theme.bottom, .18));
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, height);
+    gradient.addColorStop(0, toRgb(shadeCover(.42)));
+    gradient.addColorStop(.5, toRgb(shadeCover(.33)));
+    gradient.addColorStop(1, toRgb(shadeCover(.24)));
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, height);
-
-    const glowX = persian ? 180 : 900;
-    const glow = ctx.createRadialGradient(glowX, height * .12, 10, glowX, height * .12, 340);
-    glow.addColorStop(0, `${theme.secondary}58`);
-    glow.addColorStop(1, `${theme.secondary}00`);
-    ctx.fillStyle = glow;
-    ctx.fillRect(persian ? 0 : 500, 0, 580, height * .42);
 
     const hasCover = currentArtworkForCard && currentArtworkSongId === currentSong.id && currentArtworkForCard.naturalWidth;
     const coverSize = 148;
@@ -941,18 +1075,30 @@
     ctx.fillStyle = theme.accent;
     ctx.fillRect(metaAlign === 'right' ? metaX - 50 : metaX, coverY + 3, 50, 3);
     ctx.fillStyle = theme.text;
-    ctx.font = `600 27px ${sansFont}`;
+    const titleRtl = isRtlText(currentSong.title, persian);
+    ctx.font = `600 27px ${titleRtl ? 'Vazirmatn, Tahoma, sans-serif' : sansFont}`;
+    ctx.direction = titleRtl ? 'rtl' : 'ltr';
     ctx.fillText(currentSong.title, metaX, coverY + 48, hasCover ? 620 : 860);
     ctx.fillStyle = theme.muted;
-    ctx.font = `500 21px ${sansFont}`;
+    const artistRtl = isRtlText(currentSong.artist, persian);
+    ctx.font = `500 21px ${artistRtl ? 'Vazirmatn, Tahoma, sans-serif' : sansFont}`;
+    ctx.direction = artistRtl ? 'rtl' : 'ltr';
     ctx.fillText(currentSong.artist, metaX, coverY + 88, hasCover ? 620 : 860);
     if (currentSong.album) {
-      ctx.font = `400 17px ${sansFont}`;
-      ctx.fillText(`${t('albumLabel')}: ${currentSong.album}`, metaX, coverY + 126, hasCover ? 620 : 860);
+      const albumText = `${t('albumLabel')}: ${currentSong.album}`;
+      const albumRtl = isRtlText(albumText, persian);
+      ctx.font = `400 17px ${albumRtl ? 'Vazirmatn, Tahoma, sans-serif' : sansFont}`;
+      ctx.direction = albumRtl ? 'rtl' : 'ltr';
+      ctx.fillText(albumText, metaX, coverY + 126, hasCover ? 620 : 860);
     }
-    ctx.textAlign = align;
 
     const quote = snippetInput.value.trim();
+    const quoteRtl = isRtlText(quote, persian);
+    const quoteEdge = quoteRtl ? canvas.width - 88 : 88;
+    const quoteAlign = quoteRtl ? 'right' : 'left';
+    const lyricFont = quoteRtl ? 'Vazirmatn, Tahoma, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif';
+    ctx.direction = quoteRtl ? 'rtl' : 'ltr';
+    ctx.textAlign = quoteAlign;
     let fontSize = quote.length > 260 ? 46 : quote.length > 150 ? 56 : 68;
     const maxWidth = 900;
     const quoteTop = height * .385;
@@ -969,11 +1115,12 @@
     const lineHeight = fontSize * 1.24;
     let y = quoteTop + Math.max(fontSize, (maxQuoteHeight - lines.length * lineHeight) / 2 + fontSize);
     for (const line of lines) {
-      ctx.fillText(line, edge, y, maxWidth);
+      ctx.fillText(line, quoteEdge, y, maxWidth);
       y += lineHeight;
     }
     ctx.fillStyle = theme.accent;
-    ctx.fillRect(persian ? edge - 54 : edge, height - 224, 54, 3);
+    ctx.fillRect(quoteRtl ? quoteEdge - 54 : quoteEdge, height - 224, 54, 3);
+    if (cacheShare) scheduleShareBlob(canvas, format);
     return canvas;
   }
 
@@ -1039,29 +1186,72 @@
     return t(format === 'story' ? 'instagramStoryDownloaded' : 'instagramPostDownloaded');
   }
 
+  function buildShareText(maxLength = 280) {
+    const prefix = t('xSharePrefix');
+    const appCredit = t('shareAppCredit');
+    let songCredit = interpolate(t('shareCredit'), { title: currentSong.title, artist: currentSong.artist });
+    const creditLimit = Math.max(12, maxLength - prefix.length - appCredit.length - 3);
+    if (songCredit.length > creditLimit) songCredit = `${songCredit.slice(0, creditLimit - 1).trimEnd()}…`;
+    const snippet = snippetInput.value.trim();
+    const room = Math.max(0, maxLength - prefix.length - appCredit.length - songCredit.length - 2);
+    const excerpt = snippet.length > room ? `${snippet.slice(0, Math.max(0, room - 1)).trimEnd()}…` : snippet;
+    return `${prefix}${excerpt}\n${appCredit}\n${songCredit}`;
+  }
+
+  function openXComposer(text) {
+    toast(t('xComposerReady'));
+    return window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+  }
+
   async function shareImage(format = 'post', destination = 'Share') {
     if (!validateSnippet()) return;
-    const canvas = await prepareCard(format);
-    if (!canvas) return toast(t('imageError'));
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const song = currentSong;
+    let canvas = $('#share-canvas');
+    if (canvas.hidden || cardFormat !== format) canvas = drawCard(format, false);
+    const key = shareCardKey(format);
+    const filename = `lyricsify-${slug(song.title)}-${format}.png`;
+    const caption = buildShareText();
+
+    // X's web composer cannot accept an image file. If the cached card isn't ready,
+    // open its text composer immediately while the tap still has user activation.
+    if (destination === 'X' && !shareBlobCache.has(key)) {
+      openXComposer(caption);
+      canvas.toBlob((blob) => {
+        if (blob) downloadBlob(blob, filename, t('xImageFallback'));
+        else toast(t('imageError'));
+      }, 'image/png');
+      return;
+    }
+
+    const blob = shareBlobCache.get(key) || await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
     if (!blob) return toast(t('imageError'));
-    const filename = `lyricsify-${slug(currentSong.title)}-${format}.png`;
+    if (!currentSong || currentSong.id !== song.id) return;
     const file = typeof File === 'function' ? new File([blob], filename, { type: 'image/png' }) : null;
     if (!canShareImageFile(file)) {
-      const message = destination.startsWith('Instagram') ? instagramDownloadMessage(format) : t('cardReady');
-      downloadBlob(blob, filename, message);
+      if (destination === 'X') {
+        openXComposer(caption);
+        downloadBlob(blob, filename, t('xImageFallback'));
+      } else {
+        const message = destination.startsWith('Instagram') ? instagramDownloadMessage(format) : t('cardReady');
+        downloadBlob(blob, filename, message);
+      }
       return;
     }
     try {
       await navigator.share({
-        title: interpolate(t('shareTitle'), { title: currentSong.title, artist: currentSong.artist }),
-        text: interpolate(t('copyFormat'), { snippet: snippetInput.value.trim(), title: currentSong.title, artist: currentSong.artist }),
+        title: interpolate(t('shareTitle'), { title: song.title, artist: song.artist }),
+        text: caption,
         files: [file],
       });
-      if (destination.startsWith('Instagram')) toast(t('instagramShareReady'));
+      if (destination === 'X') toast(t('xShareReady'));
+      else if (destination.startsWith('Instagram')) toast(t('instagramShareReady'));
+      else toast(t('cardReady'));
     } catch (error) {
       if (error.name === 'AbortError') return;
-      if (destination.startsWith('Instagram')) {
+      if (destination === 'X') {
+        openXComposer(caption);
+        downloadBlob(blob, filename, t('xImageFallback'));
+      } else if (destination.startsWith('Instagram')) {
         downloadBlob(blob, filename, instagramDownloadMessage(format));
         window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
       } else {
@@ -1080,10 +1270,12 @@
     const open = typeof force === 'boolean' ? force : button.getAttribute('aria-expanded') !== 'true';
     button.setAttribute('aria-expanded', String(open));
     menu.hidden = !open;
+    if (open) primeShareBlobs();
   }
 
   async function shareInstagram(format) {
     toggleInstagramMenu(false);
+    if (!validateSnippet()) return;
     const canTryNativeShare = typeof File === 'function'
       && canShareImageFile(new File([''], 'lyricsify-share-check.png', { type: 'image/png' }));
     // Open Instagram while the tap still has user activation if native image sharing is unavailable.
@@ -1108,29 +1300,22 @@
   }
 
   function postToX() {
-    if (!validateSnippet()) return;
-    const prefix = t('xSharePrefix');
-    let credit = interpolate(t('shareCredit'), { title: currentSong.title, artist: currentSong.artist });
-    const creditLimit = Math.max(12, 280 - prefix.length - 24);
-    if (credit.length > creditLimit) credit = `${credit.slice(0, creditLimit - 1).trimEnd()}…`;
-    const maxSnippetLength = Math.max(0, 280 - prefix.length - credit.length - 1);
-    const snippet = snippetInput.value.trim();
-    const excerpt = snippet.length > maxSnippetLength
-      ? `${snippet.slice(0, Math.max(0, maxSnippetLength - 1)).trimEnd()}…`
-      : snippet;
-    const text = `${prefix}${excerpt}\n${credit}`;
-    toast(t('xComposerReady'));
-    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    return shareImage('post', 'X');
   }
 
   searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
+    clearTimeout(searchDebounceTimer);
     const query = searchInput.value.trim();
     if (!query) { searchInput.focus(); return; }
+    clearSearchButton.hidden = false;
     currentResults = [];
     currentSong = null;
+    moveResultsToSearchMenu();
+    setSearchResultsOpen(true);
     document.querySelectorAll('.nav-link').forEach((link) => link.classList.toggle('active', link.dataset.view === 'home'));
-    $('#view-label').textContent = t('viewDiscover');
+    const viewLabel = $('#view-label');
+    if (viewLabel) viewLabel.textContent = t('viewDiscover');
     performSearch(query, providerSelect.value);
   });
   document.querySelectorAll('.suggestion').forEach((button) => button.addEventListener('click', () => {
@@ -1149,7 +1334,10 @@
     applyTheme(theme);
     try { localStorage.setItem('lyricsify.theme.v1', theme); } catch (_) { /* the current tab still switches themes */ }
   });
-  snippetInput.addEventListener('input', updateSnippetCount);
+  snippetInput.addEventListener('input', () => {
+    clearLyricLineSelection();
+    updateSnippetCount();
+  });
   $('#share-button').addEventListener('click', shareCard);
   $('#instagram-toggle').addEventListener('click', () => toggleInstagramMenu());
   $('#instagram-story').addEventListener('click', () => shareInstagram('story'));
@@ -1158,24 +1346,76 @@
     if (!event.target.closest('.instagram-share')) toggleInstagramMenu(false);
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') toggleInstagramMenu(false);
-  });
-  $('#card-theme').addEventListener('change', () => {
-    if (currentSong && snippetInput.value.trim()) drawCard();
+    if (event.key === 'Escape') {
+      toggleInstagramMenu(false);
+      setSearchResultsOpen(false);
+    }
   });
   $('#x-button').addEventListener('click', postToX);
   $('#download-button').addEventListener('click', downloadCard);
   $('#copy-button').addEventListener('click', copySnippet);
-  $('#lyrics-text').addEventListener('mouseup', () => setTimeout(useSelectedLyric, 0));
-  $('#lyrics-text').addEventListener('touchend', () => setTimeout(useSelectedLyric, 0));
+  clearSearchButton.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    searchInput.focus();
+  });
+  lyricsNode.addEventListener('click', (event) => {
+    const line = event.target.closest('.lyric-line');
+    if (line && lyricsNode.contains(line)) toggleLyricLine(line);
+  });
   $('#about-button').addEventListener('click', () => $('#about-dialog').showModal());
+  $('#saved-view-button').addEventListener('click', showSavedSongs);
+  $('#home-link').addEventListener('click', (event) => {
+    event.preventDefault();
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    searchInput.focus();
+  });
   $('#dialog-close').addEventListener('click', () => $('#about-dialog').close());
   $('#dialog-ok').addEventListener('click', () => $('#about-dialog').close());
   $('#about-dialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
-  searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' && event.target.value.trim()) { event.preventDefault(); searchForm.requestSubmit(); }
+  searchInput.addEventListener('input', () => {
+    const wasInUpperView = ['searching', 'results', 'detail', 'saved', 'no-results', 'network-error'].includes(viewMode);
+    const wasInContentView = ['detail', 'saved', 'no-results', 'network-error'].includes(viewMode);
+    const query = searchInput.value.trim();
+    clearTimeout(searchDebounceTimer);
+    activeSearch += 1;
+    clearSearchButton.hidden = !searchInput.value;
+    setBusy(false);
+    setSearchResultsOpen(false);
+    resultsNode.replaceChildren();
+    resultsNode.hidden = true;
+    resultsSlot.replaceChildren();
+    currentResults = [];
+    currentSong = null;
+    detailNode.hidden = true;
+    emptyNode.hidden = true;
+    setNotice('');
+    resetCoverTheme();
+    viewMode = query && wasInUpperView ? 'searching' : 'home';
+    emptyMode = 'home';
+    updateSectionText();
+    if (!query && wasInContentView) window.scrollTo(0, 0);
+    if (query.length >= 2) {
+      searchDebounceTimer = setTimeout(() => {
+        if (query === searchInput.value.trim()) searchForm.requestSubmit();
+      }, 700);
+    }
   });
-  $('#saved-count').textContent = String(savedSongs.length);
+  searchInput.addEventListener('focus', () => {
+    if (viewMode === 'results' && currentResults.length > 0) setSearchResultsOpen(true);
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('#search-form')) setSearchResultsOpen(false);
+  });
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && event.target.value.trim()) {
+      clearTimeout(searchDebounceTimer);
+      event.preventDefault();
+      searchForm.requestSubmit();
+    }
+  });
+  $('#saved-count').textContent = localizedNumber(savedSongs.length);
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
   }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#d8d8d8">
+  <meta name="theme-color" content="#121212">
   <meta name="description" content="Find the words behind the music, save your favorite lines, and turn them into shareable lyric cards.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -13,130 +13,99 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lrclib.net">
   <link rel="preconnect" href="https://api.lyrics.ovh">
-  <link rel="stylesheet" href="styles.css?v=warm10">
-  <script src="app.js?v=warm10" defer></script>
+  <link rel="stylesheet" href="styles.css?v=warm22">
+  <script src="app.js?v=warm22" defer></script>
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" aria-label="Main navigation">
-      <a class="brand" href="#home" aria-label="Lyricsify home">
-        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M19 4v17.2a5.8 5.8 0 1 1-3-5.1V8.5l12-2.7v13.2a5.8 5.8 0 1 1-3-5.1V4.8L19 6.2V4Z"/></svg></span>
-        <span>lyrics<span class="brand-light">ify</span></span>
-      </a>
-      <div class="sidebar-label" data-i18n="yourSpace">YOUR SPACE</div>
-      <nav class="nav-links">
-        <button class="nav-link active" type="button" data-view="home"><span class="nav-icon" aria-hidden="true">⌂</span> <span data-i18n="discover">Discover</span></button>
-        <button class="nav-link" type="button" data-view="saved"><span class="nav-icon" aria-hidden="true">♡</span> <span data-i18n="savedSongs">Saved songs</span> <span class="saved-count" id="saved-count">0</span></button>
-      </nav>
-      <div class="sidebar-note">
-        <span class="note-icon">✳</span>
-        <p>Some songs just <em>get you.</em><br>Keep the lines that do.</p>
-      </div>
-      <div class="sidebar-bottom">
-        <span class="provider-dot"></span>
-        <span data-i18n="providerNote">Two lyric sources, one little app.</span>
-        <button class="about-link" type="button" id="about-button" data-i18n="about">About</button>
-      </div>
-    </aside>
-
-    <main class="main-content" id="home">
+<main class="main-content" id="home">
       <header class="topbar">
-        <div class="breadcrumb"><span data-i18n="breadcrumb">YOUR MUSIC, IN WORDS</span><span class="breadcrumb-separator">/</span><span id="view-label">DISCOVER</span></div>
-        <div class="top-controls">
-          <button class="language-toggle" id="language-toggle" type="button" aria-label="Switch to Persian" title="فارسی">فا</button>
-          <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true">◐</span><span class="theme-label" data-i18n="darkMode">Dark mode</span></button>
+        <div class="header-actions" aria-label="App controls">
+          <button class="header-action saved-view-button" id="saved-view-button" type="button"><span data-i18n="savedSongs">Saved songs</span><span id="saved-count">0</span></button>
+          <button class="header-action theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch theme"><span class="theme-label" data-i18n="darkMode">Dark mode</span></button>
+          <button class="header-action language-toggle" id="language-toggle" type="button" aria-label="Switch language">EN</button>
+          <button class="about-icon-button" id="about-button" type="button" aria-label="About Lyricsify" title="About" data-i18n-aria="about"><span aria-hidden="true">i</span></button>
         </div>
       </header>
+      <span id="view-label" hidden></span>
+      <a class="center-logo" href="#home" id="home-link" aria-label="Lyricsify home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16h4m4-7v14m5-19v24m5-15v6m5-3h4"/></svg>
+        <span>Lyricsify</span>
+      </a>
 
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <div class="eyebrow"><span class="eyebrow-line"></span><span data-i18n="findTheLine">FIND THE LINE</span></div>
-          <h1 id="hero-title" data-i18n-html="heroTitle">Songs say it<br><span>better.</span></h1>
-          <p data-i18n="heroIntro">Look up a song, find the words that hit, and make a little something worth sharing.</p>
-        </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
-          <div class="art-note note-one">♪</div><div class="art-note note-two">♫</div>
-          <div class="art-record"><div class="record-center"><span>ly</span></div></div>
-          <div class="art-caption">SIDE A · YOUR FEELINGS</div>
-        </div>
-      </section>
-
-      <form class="search-panel" id="search-form">
-        <label class="search-label" for="search-input" data-i18n="searchPrompt">What are we listening for?</label>
+      <form class="search-panel" id="search-form" aria-label="Search songs">
+        <label class="sr-only" for="search-input" data-i18n="searchPrompt">Search songs</label>
         <div class="search-row">
-          <div class="search-input-wrap"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4 4"></path></svg>
-            <input id="search-input" name="q" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Song, artist, or a lyric you remember…" autocomplete="off" required>
-            <kbd>↵</kbd>
+          <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4 4"></path></svg>
+            <input id="search-input" name="q" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Search a song or artist" autocomplete="off" aria-controls="search-results-menu" aria-expanded="false">
+            <button id="clear-search" class="search-clear" type="button" aria-label="Clear search" title="Clear search" data-i18n-aria="clearSearch" data-i18n-title="clearSearch" hidden>×</button>
           </div>
-          <label class="sr-only" for="provider-select">Search provider</label>
-          <select id="provider-select" aria-label="Search provider">
-            <option value="all" data-i18n="allSources">All sources</option>
-            <option value="lrclib">LRCLIB</option>
-            <option value="lyricsovh">Lyrics.ovh</option>
-          </select>
-          <button class="search-button" type="submit"><span id="search-button-label" data-i18n="findLyrics">Find lyrics</span> <span aria-hidden="true">↗</span></button>
+          <select id="provider-select" aria-label="Search provider" hidden><option value="all">All sources</option></select>
         </div>
-        <div class="search-hint"><span class="sparkle" aria-hidden="true">✳</span> <span data-i18n="tryExample">Try</span> <button type="button" class="suggestion" data-query="Dreams Fleetwood Mac" data-i18n="suggestionDreams">“Dreams” by Fleetwood Mac</button> <span data-i18n="orWord">or</span> <button type="button" class="suggestion" data-query="Daft Punk Get Lucky" data-i18n="suggestionGetLucky">“Get Lucky” by Daft Punk</button></div>
+        <div class="search-results-menu" id="search-results-menu" role="region" aria-live="polite" hidden aria-label="Search results">
+          <div class="search-menu-header"><span id="search-menu-title"></span><span class="result-count" id="result-count"></span></div>
+          <div id="search-menu-status" class="search-menu-status" role="status" hidden></div>
+          <div id="results" class="results-grid"></div>
+        </div>
       </form>
 
       <section class="results-section" aria-live="polite" aria-busy="false">
         <div class="section-heading">
           <div><div class="eyebrow small-eyebrow" id="section-kicker" data-i18n="homeKicker">A GOOD PLACE TO START</div><h2 id="section-title" data-i18n="homeTitle">Pick a song. Keep a line.</h2></div>
-          <span class="result-count" id="result-count"></span>
+          <span class="result-count" id="saved-result-count"></span>
         </div>
         <div id="notice" class="notice" role="status" hidden></div>
-        <div id="results" class="results-grid"></div>
+        <div id="results-slot" class="results-grid"></div>
         <div id="detail" class="detail-layout" hidden>
           <article class="lyrics-card">
             <div class="track-heading">
               <div class="track-cover" id="track-cover"><img id="detail-cover" alt="" hidden></div>
               <div class="track-meta"><span class="source-label" id="detail-source">LYRICS</span><h3 id="detail-title"></h3><p id="detail-artist"></p><p id="detail-album" class="album-meta" hidden></p><div class="artist-links" id="artist-links" aria-label="Artist profiles"></div></div>
-              <button class="favorite-button" id="favorite-button" type="button" aria-label="Save song" title="Save song">♡</button>
+              <button class="favorite-button" id="favorite-button" type="button" aria-label="Save song" title="Save song"><span class="favorite-label" data-i18n="saveAction">Save</span></button>
             </div>
-            <div class="lyrics-toolbar"><span data-i18n="theLyrics">THE LYRICS</span><span class="select-tip"><span data-i18n="selectTip">Select a line to make it yours</span> <span aria-hidden="true">↓</span></span></div>
-            <pre id="lyrics-text" class="lyrics-text" tabindex="0"></pre>
+            <div class="lyrics-toolbar"><span data-i18n="theLyrics">THE LYRICS</span><span class="select-tip" data-i18n="selectTip">Tap lines to select up to 10</span></div>
+            <div id="lyrics-text" class="lyrics-text" role="group" aria-label="Lyrics lines"></div>
             <div class="attribution" id="attribution"></div>
           </article>
           <aside class="snippet-panel" aria-labelledby="snippet-heading">
-            <div class="snippet-header"><span class="snippet-icon">✳</span><div><span class="eyebrow small-eyebrow" data-i18n="makeItYours">MAKE IT YOURS</span><h3 id="snippet-heading" data-i18n="snippetTitle">A line worth keeping.</h3></div></div>
+            <div class="snippet-header"><div><span class="eyebrow small-eyebrow" data-i18n="makeItYours">YOUR EXCERPT</span><h3 id="snippet-heading" data-i18n="snippetTitle">A line worth keeping.</h3></div></div>
             <p class="snippet-intro" data-i18n="snippetIntro">Select a lyric, or write your own excerpt below. Then turn it into a shareable card.</p>
             <label class="sr-only" for="snippet-input">Your lyric snippet</label>
             <textarea id="snippet-input" maxlength="500" data-i18n-placeholder="snippetPlaceholder" placeholder="Your favorite line will show up here…"></textarea>
             <canvas id="share-canvas" class="card-preview" width="1080" height="1350" hidden aria-label="Preview of your share card"></canvas>
-            <div class="snippet-controls"><span id="character-count">0 / 280 for X</span><label for="card-theme" data-i18n="cardMood">CARD MOOD</label><select id="card-theme" aria-label="Card mood"><option value="plum" data-i18n="moodLavender">Lavender</option><option value="sunset" data-i18n="moodRose">Rose</option><option value="paper" data-i18n="moodMist">Mist</option></select></div>
+            <div class="snippet-controls"><span id="character-count">0 / 280 for X</span></div>
             <div class="share-actions">
-              <button type="button" class="share-button primary-share" id="share-button"><span>↗</span> <span data-i18n="shareCard">Share card</span></button>
+              <button type="button" class="share-button primary-share" id="share-button"><span data-i18n="shareCard">Share card</span></button>
               <div class="instagram-share">
-                <button type="button" class="share-button instagram-toggle" id="instagram-toggle" aria-expanded="false" aria-controls="instagram-options"><span class="instagram-glyph" aria-hidden="true">◎</span> <span data-i18n="instagram">Instagram</span> <span class="instagram-chevron" aria-hidden="true">⌄</span></button>
+                <button type="button" class="share-button instagram-toggle" id="instagram-toggle" aria-expanded="false" aria-controls="instagram-options"><span data-i18n="instagram">Instagram</span><span class="instagram-chevron" aria-hidden="true"></span></button>
                 <div class="instagram-options" id="instagram-options" hidden>
                   <button type="button" id="instagram-story"><span data-i18n="story">Story</span> <span>9:16</span></button>
                   <button type="button" id="instagram-post"><span data-i18n="post">Post</span> <span>4:5</span></button>
                 </div>
               </div>
-              <button type="button" class="share-button" id="x-button"><span class="x-mark">𝕏</span> <span data-i18n="postToX">Post to X</span></button>
-              <button type="button" class="share-button" id="download-button"><span>↓</span> <span data-i18n="downloadImage">Download image</span></button>
-              <button type="button" class="share-button quiet-share" id="copy-button"><span>▢</span> <span data-i18n="copyText">Copy text</span></button>
+              <button type="button" class="share-button" id="x-button"><span data-i18n="postToX">Post to X</span></button>
+              <button type="button" class="share-button" id="download-button"><span data-i18n="downloadImage">Download image</span></button>
+              <button type="button" class="share-button quiet-share" id="copy-button"><span data-i18n="copyText">Copy text</span></button>
             </div>
             <p class="share-footnote" data-i18n="shareFootnote">Instagram opens your device’s share sheet; choose Story or Post. If sharing isn’t supported, the correctly sized image downloads. Lyrics belong to their writers.</p>
           </aside>
         </div>
         <div id="empty-state" class="empty-state">
-          <div class="empty-illustration" aria-hidden="true"><span class="empty-sun"></span><span class="empty-vinyl">♫</span><span class="empty-scribble">“</span></div>
-          <div><span class="eyebrow small-eyebrow" data-i18n="emptyEyebrow">YOUR NEXT FAVORITE LINE</span><h3 data-i18n="emptyTitle">It’s out there somewhere.</h3><p data-i18n="emptyIntro">Search a title, an artist, or that half-remembered lyric stuck in your head.</p></div>
+<div><span class="eyebrow small-eyebrow" data-i18n="emptyEyebrow">YOUR NEXT FAVORITE LINE</span><h3 data-i18n="emptyTitle">It’s out there somewhere.</h3><p data-i18n="emptyIntro">Search a title, an artist, or that half-remembered lyric stuck in your head.</p></div>
         </div>
       </section>
-      <footer class="page-footer"><span class="creator-credit"><span data-i18n="madeWithLove">Made with love by</span> <bdi dir="ltr"><a href="https://github.com/momalekiii" target="_blank" rel="noreferrer" dir="ltr">@momalekiii</a></bdi> <span class="footer-heart" aria-hidden="true">♥</span></span><span data-i18n="rightsFooter">Lyrics and cover artwork remain the property of their respective owners.</span></footer>
-    </main>
+      <footer class="page-footer"><span dir="ltr">© 2026 · Developed with <span class="footer-heart" aria-label="love">❤️</span> by <bdi dir="ltr">@momalekiii</bdi></span></footer>
+</main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <dialog id="about-dialog" class="about-dialog">
-    <button class="dialog-close" id="dialog-close" type="button" aria-label="Close" data-i18n-aria="close">×</button><span class="eyebrow small-eyebrow" data-i18n="sourceNote">A NOTE ON SOURCES</span><h2 data-i18n="aboutTitle">Lyricsify is a little window, not a lyrics archive.</h2>
+    <button class="dialog-close" id="dialog-close" type="button" aria-label="Close" data-i18n-aria="close">×</button><span class="eyebrow small-eyebrow" data-i18n="sourceNote">ABOUT LYRICSIFY</span><h2 data-i18n="aboutTitle">Lyricsify is a little window, not a lyrics archive.</h2>
     <p data-i18n-html="aboutSources">Searches use <a href="https://lrclib.net" target="_blank" rel="noreferrer">LRCLIB</a> and <a href="https://lyrics.ovh" target="_blank" rel="noreferrer">Lyrics.ovh</a>. Availability depends on each source. We don’t store a central lyrics catalog; saved songs stay in this browser.</p>
     <p data-i18n="aboutArtwork">Album artwork is found via Apple’s iTunes Search API and remains the property of its artists, labels, and rights holders.</p>
     <p data-i18n="aboutSharing">Share cards are generated on your device. Social networks control their own posting and sharing features: X opens a prepared post, while Instagram sharing depends on your device’s share menu.</p>
     <p class="about-credit"><span data-i18n="madeWithLove">Made with love by</span> <bdi dir="ltr"><a href="https://github.com/momalekiii" target="_blank" rel="noreferrer" dir="ltr">@momalekiii</a></bdi>.</p>
-    <button class="search-button dialog-ok" id="dialog-ok" type="button" data-i18n="gotIt">Got it</button>
+    <button class="dialog-confirm" id="dialog-ok" type="button" data-i18n="gotIt">Close</button>
   </dialog>
 </body>
 </html>
