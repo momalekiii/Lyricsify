@@ -1,10 +1,10 @@
 # Lyricsify
 
-Lyricsify is a phone-first, installable web app for finding lyrics, saving songs in your browser, and turning 1–5 chosen lines into a shareable image. Its Spotify-inspired dark interface centers one search field, adapts its accent to selected cover art, and includes English and Persian (RTL with Vazirmatn) plus a light theme. Made with love by [@momalekiii](https://github.com/momalekiii). The app is plain HTML, CSS, and JavaScript: no build step, framework, server, or API key is needed for the web experience.
+Lyricsify is a phone-first, installable web app for finding lyrics, saving songs in your browser, and turning 1–5 chosen lines into a shareable image. Its minimal Spotify-inspired interface centers a single search field, automatically searches after typing pauses, and shows matches in a dropdown. The About button contains saved songs, theme and language controls, and app information. It includes English and Persian (RTL with Vazirmatn) plus a light theme. Made with love by [@momalekiii](https://github.com/momalekiii). The app is plain HTML, CSS, and JavaScript: no build step, framework, server, or API key is needed for the web experience.
 
 ## Run it locally
 
-The site uses browser APIs (including a service worker), so serve the files over HTTP rather than opening `index.html` directly:
+The site uses browser APIs (including a service worker), so serve the files over HTTP rather than opening `index.html` directly. Type a song or artist, then pause briefly for automatic search; press Enter to search immediately:
 
 ```bash
 python -m http.server 8000 --bind 0.0.0.0
@@ -16,15 +16,15 @@ Then visit <http://localhost:8000>. Searches use two providers:
 - **Lyrics.ovh** for direct artist/title lookups. Use `Artist - Song title` or `Song title by Artist` when selecting Lyrics.ovh.
 - **Apple's iTunes Search API** for matching album-cover artwork and a track-metadata fallback when no lyric source matches; it does not provide lyrics.
 
-Choose **All sources** to search LRCLIB and, when the query has an explicit artist/title format, Lyrics.ovh together. When a song is open, artist-specific search links are available for Spotify and SoundCloud; the links open each service's artist results because direct profile IDs are not provided by the lyrics sources. Lyrics availability varies by song and provider. Searches require an internet connection; the app shell is cached for subsequent visits, while saved songs are stored only in that browser's local storage.
+Searches use all available lyric sources by default; when the query has an explicit artist/title format, Lyrics.ovh is included with LRCLIB. When a song is open, artist-specific search links are available for Spotify and SoundCloud; the links open each service's artist results because direct profile IDs are not provided by the lyrics sources. Lyrics availability varies by song and provider. Searches require an internet connection; the app shell is cached for subsequent visits, while saved songs are stored only in that browser's local storage.
 
 ## Share a lyric
 
 1. Search and open a song.
 2. Select 1–5 lyric lines, or type an excerpt in the snippet box. Longer selections are shortened to five lines with a warning.
-3. Choose a card mood and select **Share card**, open **Instagram** to choose **Story (9:16)** or **Post (4:5)**, or use **Download image**, **Copy text**, or **Post to X**.
+3. Select **Share card**, open **Instagram** to choose **Story (9:16)** or **Post (4:5)**, or use **Download image**, **Copy text**, or **Post to X**.
 
-Share cards are rendered on-device as PNGs with matching album artwork when available (1080 × 1350 for posts, 1080 × 1920 for Stories). They omit Lyricsify branding and lyric-provider labels so the selected excerpt stays front and center. On phones, **Share card**, **Instagram**, and **Post to X** use the native share sheet when the browser supports sharing image files, with a prefilled caption. Choose Instagram or X there to pass along the image. If image sharing is unavailable, the image downloads; X opens a prefilled text composer so you can attach it, and Instagram opens for manual upload. The social app always requires you to confirm the post. **Post to X** opens X's composer with a short prefilled introduction, the selected line, and song credit; the user reviews and publishes it. The app does not log in to social accounts or post on a user's behalf. Social services decide which sharing options are available on a given device.
+Share cards are rendered on-device as PNGs with matching album artwork when available (1080 × 1350 for posts, 1080 × 1920 for Stories). They omit Lyricsify branding and lyric-provider labels so the selected excerpt stays front and center. The X and Instagram share text places “— by Lyricsify” under the excerpt. On phones, **Share card**, **Instagram**, and **Post to X** use the native share sheet when the browser supports sharing image files, with a prefilled caption. Choose Instagram or X there to pass along the image. If image sharing is unavailable, the image downloads; X opens a prefilled text composer so you can attach it, and Instagram opens for manual upload. The social app always requires you to confirm the post. **Post to X** opens X's composer with a short prefilled introduction, the selected line, and song credit; the user reviews and publishes it. The app does not log in to social accounts or post on a user's behalf. Social services decide which sharing options are available on a given device.
 
 Lyrics are copyrighted works. Lyricsify does not operate a central lyric catalog; lyrics are fetched from the named providers and remain the property of their respective writers and publishers. Share thoughtfully and follow each provider's terms.
 
