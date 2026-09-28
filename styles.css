@@ -29,7 +29,7 @@ body{background:radial-gradient(ellipse at 80% 5%,rgba(163,198,205,.33),transpar
 :root[data-theme="dark"] body{background:radial-gradient(ellipse at 78% 4%,rgba(77,111,125,.2),transparent 34%),radial-gradient(ellipse at 7% 48%,rgba(90,69,111,.19),transparent 34%),radial-gradient(ellipse at 78% 92%,rgba(89,70,83,.16),transparent 34%),linear-gradient(140deg,#141722 0%,#171d22 50%,#1b1822 100%);background-attachment:fixed}
 .top-controls{display:flex;align-items:center;gap:7px}.language-toggle{height:30px;min-width:34px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--glass);color:var(--brand-strong);font:600 10px var(--sans);transition:transform .2s,background .2s,border .2s}.language-toggle:hover{transform:translateY(-1px);background:var(--glass-strong);border-color:var(--brand)}
 :root[dir="rtl"] .nav-links{margin-left:0;margin-right:auto;margin-inline-start:auto}.sidebar-bottom{margin-inline-start:4px}.nav-link{text-align:start}.search-button span{margin-left:0;margin-inline-start:7px}.dialog-close{right:auto;left:auto;inset-inline-end:13px}.instagram-options{right:auto;inset-inline-end:0}.instagram-options button span:first-child{font:inherit;color:var(--text)}.card-preview{direction:ltr}
-:root[dir="rtl"] .breadcrumb{letter-spacing:0}.page-footer, .search-hint, .snippet-intro, .share-footnote, .attribution, .empty-state p{text-align:start}:root[dir="rtl"] .search-input-wrap input,:root[dir="rtl"] #snippet-input{direction:auto;text-align:start}:root[dir="rtl"] #lyrics-text{direction:auto;text-align:start}:root[dir="rtl"] .track-meta{text-align:start}:root[dir="rtl"] .hero h1{letter-spacing:0}:root[dir="rtl"] .lyrics-toolbar{letter-spacing:0}:root[dir="rtl"] .source-label,:root[dir="rtl"] .small-eyebrow{letter-spacing:0}:root[dir="rtl"] .search-hint .sparkle{margin-left:4px;margin-right:0}
+:root[dir="rtl"] .breadcrumb{letter-spacing:0}.page-footer, .search-hint, .snippet-intro, .share-footnote, .attribution, .empty-state p{text-align:start}.search-input-wrap input,#snippet-input,#lyrics-text{ text-align:start}:root[dir="rtl"] .track-meta{text-align:start}:root[dir="rtl"] .hero h1{letter-spacing:0}:root[dir="rtl"] .lyrics-toolbar{letter-spacing:0}:root[dir="rtl"] .source-label,:root[dir="rtl"] .small-eyebrow{letter-spacing:0}:root[dir="rtl"] .search-hint .sparkle{margin-left:4px;margin-right:0}
 @media(max-width:740px){:root[dir="rtl"] .sidebar{gap:8px}:root[dir="rtl"] .nav-links{margin-inline-start:auto}:root[dir="rtl"] .sidebar-bottom{margin-inline-start:0}}
 :root[dir="rtl"] .hero-copy{text-align:right}:root[dir="rtl"] .hero-art{right:auto;left:clamp(0px,7vw,80px)}:root[dir="rtl"] .theme-toggle,:root[dir="rtl"] .language-toggle{font-family:var(--sans)}:root[dir="rtl"] .share-button span{margin-right:0;margin-inline-end:4px}:root[dir="rtl"] .share-button.primary-share span{margin-inline-end:4px}:root[dir="rtl"] .snippet-controls label{text-align:start}:root[dir="rtl"] .search-button span{margin-left:0;margin-inline-start:7px}:root[dir="rtl"] .instagram-options button span:last-child{font-family:var(--mono)}
 :root[lang="fa"]{--sans:'Vazirmatn',Tahoma,sans-serif;--serif:'Vazirmatn',Tahoma,sans-serif;--mono:'Vazirmatn',Tahoma,sans-serif}:root[dir="rtl"] .hero h1 span{font-style:normal}:root[dir="rtl"] .search-hint .suggestion{font-family:var(--sans)}:root[dir="rtl"] .search-row select,:root[dir="rtl"] .snippet-controls select{font-family:var(--sans)}:root[dir="rtl"] .page-footer{line-height:1.8}
@@ -568,4 +568,15 @@ html{scroll-behavior:auto}
   .language-toggle{min-width:31px}
   .about-icon-button{width:30px;height:30px}
   .center-logo{font-size:22px}
+}
+
+/* Text direction follows the content even when the surrounding UI is in the other language. */
+#search-input:dir(rtl),
+#snippet-input:dir(rtl),
+.lyric-line:dir(rtl),
+.track-meta h3:dir(rtl),
+.track-meta p:dir(rtl),
+.result-info strong:dir(rtl),
+.result-info span:dir(rtl) {
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
 }

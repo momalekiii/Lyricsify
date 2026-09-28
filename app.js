@@ -151,6 +151,16 @@
     return currentLanguage === 'fa' ? String(value).replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]) : String(value);
   }
 
+  function isRtlText(value, fallback = currentLanguage === 'fa') {
+    const rtlRange = /[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufeff]/;
+    const ltrRange = /[A-Za-z\u00c0-\u02af]/;
+    for (const character of String(value || '')) {
+      if (rtlRange.test(character)) return true;
+      if (ltrRange.test(character)) return false;
+    }
+    return fallback;
+  }
+
   function updateSectionText() {
     document.documentElement.dataset.view = viewMode;
     const kicker = $('#section-kicker');
@@ -641,6 +651,7 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'result-card';
+      button.dir = 'auto';
       button.style.setProperty('--card-delay', `${Math.min(index, 10) * 42}ms`);
       button.setAttribute('aria-label', interpolate(t('resultLabel'), { title: song.title, artist: song.artist, provider: song.provider }));
       const cover = document.createElement('span');
@@ -662,8 +673,10 @@
       info.className = 'result-info';
       const title = document.createElement('strong');
       title.textContent = song.title;
+      title.dir = 'auto';
       const artist = document.createElement('span');
       artist.textContent = `${song.artist} · ${song.provider}`;
+      artist.dir = 'auto';
       info.append(title, artist);
       button.append(cover, info);
       button.addEventListener('click', () => showSong(song));
@@ -707,6 +720,7 @@
 
   function updateAlbumDetails(song) {
     const albumNode = $('#detail-album');
+    albumNode.dir = 'auto';
     albumNode.textContent = song.album ? `${t('albumLabel')}: ${song.album}` : '';
     albumNode.hidden = !song.album;
   }
@@ -742,6 +756,7 @@
       line.className = 'lyric-line';
       line.dataset.lineIndex = String(index);
       line.textContent = text;
+      line.dir = 'auto';
       line.setAttribute('aria-pressed', 'false');
       line.setAttribute('aria-label', text);
       lyricsNode.append(line);
@@ -773,7 +788,9 @@
     setSearchResultsOpen(false);
     resultsNode.hidden = true;
     $('#detail-title').textContent = song.title;
+    $('#detail-title').dir = 'auto';
     $('#detail-artist').textContent = song.artist;
+    $('#detail-artist').dir = 'auto';
     updateAlbumDetails(song);
     const artistLinks = $('#artist-links');
     artistLinks.replaceChildren();
@@ -786,6 +803,7 @@
       profileLink.href = service.url;
       profileLink.target = '_blank';
       profileLink.rel = 'noreferrer';
+      profileLink.dir = 'ltr';
       profileLink.textContent = service.name;
       profileLink.setAttribute('aria-label', interpolate(t(service.name === 'Spotify' ? 'profileSpotify' : 'profileSoundcloud'), { artist: song.artist }));
       artistLinks.append(profileLink);
@@ -1016,23 +1034,21 @@
     const edge = persian ? canvas.width - 88 : 88;
     const align = persian ? 'right' : 'left';
     const sansFont = persian ? 'Vazirmatn, Tahoma, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif';
-    const lyricFont = sansFont;
     ctx.direction = persian ? 'rtl' : 'ltr';
     ctx.textAlign = align;
     const theme = {
-      top: '#1d2a20', bottom: '#111411', accent: '#1ed760', secondary: '#1ed760',
+      accent: '#1ed760', secondary: '#1ed760',
       text: '#f7f7f7', muted: '#b3b3b3',
     };
-    const tintCardColor = (hex, amount) => {
-      if (!currentCoverRGB) return hex;
-      const channels = hex.match(/[a-f\d]{2}/gi)?.map((channel) => parseInt(channel, 16));
-      if (!channels || channels.length < 3) return hex;
-      const mixed = channels.map((channel, index) => Math.round(channel * (1 - amount) + currentCoverRGB[index] * amount));
-      return `rgb(${mixed.join(', ')})`;
-    };
-    const gradient = ctx.createLinearGradient(0, 0, 900, height);
-    gradient.addColorStop(0, tintCardColor(theme.top, .28));
-    gradient.addColorStop(1, tintCardColor(theme.bottom, .18));
+    const coverTone = currentCoverRGB
+      ? currentCoverRGB.map((channel) => Math.round(channel * .43))
+      : [22, 43, 31];
+    const greenTone = [30, 215, 96];
+    const coverGreen = coverTone.map((channel, index) => Math.round(channel * .48 + greenTone[index] * .52));
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, height);
+    gradient.addColorStop(0, `rgb(${coverTone.join(', ')})`);
+    gradient.addColorStop(.52, `rgb(${coverGreen.join(', ')})`);
+    gradient.addColorStop(1, '#101411');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, height);
 
@@ -1066,18 +1082,30 @@
     ctx.fillStyle = theme.accent;
     ctx.fillRect(metaAlign === 'right' ? metaX - 50 : metaX, coverY + 3, 50, 3);
     ctx.fillStyle = theme.text;
-    ctx.font = `600 27px ${sansFont}`;
+    const titleRtl = isRtlText(currentSong.title, persian);
+    ctx.font = `600 27px ${titleRtl ? 'Vazirmatn, Tahoma, sans-serif' : sansFont}`;
+    ctx.direction = titleRtl ? 'rtl' : 'ltr';
     ctx.fillText(currentSong.title, metaX, coverY + 48, hasCover ? 620 : 860);
     ctx.fillStyle = theme.muted;
-    ctx.font = `500 21px ${sansFont}`;
+    const artistRtl = isRtlText(currentSong.artist, persian);
+    ctx.font = `500 21px ${artistRtl ? 'Vazirmatn, Tahoma, sans-serif' : sansFont}`;
+    ctx.direction = artistRtl ? 'rtl' : 'ltr';
     ctx.fillText(currentSong.artist, metaX, coverY + 88, hasCover ? 620 : 860);
     if (currentSong.album) {
-      ctx.font = `400 17px ${sansFont}`;
-      ctx.fillText(`${t('albumLabel')}: ${currentSong.album}`, metaX, coverY + 126, hasCover ? 620 : 860);
+      const albumText = `${t('albumLabel')}: ${currentSong.album}`;
+      const albumRtl = isRtlText(albumText, persian);
+      ctx.font = `400 17px ${albumRtl ? 'Vazirmatn, Tahoma, sans-serif' : sansFont}`;
+      ctx.direction = albumRtl ? 'rtl' : 'ltr';
+      ctx.fillText(albumText, metaX, coverY + 126, hasCover ? 620 : 860);
     }
-    ctx.textAlign = align;
 
     const quote = snippetInput.value.trim();
+    const quoteRtl = isRtlText(quote, persian);
+    const quoteEdge = quoteRtl ? canvas.width - 88 : 88;
+    const quoteAlign = quoteRtl ? 'right' : 'left';
+    const lyricFont = quoteRtl ? 'Vazirmatn, Tahoma, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif';
+    ctx.direction = quoteRtl ? 'rtl' : 'ltr';
+    ctx.textAlign = quoteAlign;
     let fontSize = quote.length > 260 ? 46 : quote.length > 150 ? 56 : 68;
     const maxWidth = 900;
     const quoteTop = height * .385;
@@ -1094,11 +1122,11 @@
     const lineHeight = fontSize * 1.24;
     let y = quoteTop + Math.max(fontSize, (maxQuoteHeight - lines.length * lineHeight) / 2 + fontSize);
     for (const line of lines) {
-      ctx.fillText(line, edge, y, maxWidth);
+      ctx.fillText(line, quoteEdge, y, maxWidth);
       y += lineHeight;
     }
     ctx.fillStyle = theme.accent;
-    ctx.fillRect(persian ? edge - 54 : edge, height - 224, 54, 3);
+    ctx.fillRect(quoteRtl ? quoteEdge - 54 : quoteEdge, height - 224, 54, 3);
     if (cacheShare) scheduleShareBlob(canvas, format);
     return canvas;
   }
