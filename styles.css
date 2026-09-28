@@ -597,7 +597,7 @@ html{scroll-behavior:auto}
 :root[data-view="detail"] .center-logo,
 :root[data-view="saved"] .center-logo,
 :root[data-view="no-results"] .center-logo,
-:root[data-view="network-error"] .center-logo{top:80px;transform:translate(-50%,-50%) scale(.94);font-size:25px}
+:root[data-view="network-error"] .center-logo{top:78px;transform:translate(-50%,-50%) scale(.94);font-size:25px}
 :root[data-view="searching"] .center-logo svg,
 :root[data-view="results"] .center-logo svg,
 :root[data-view="detail"] .center-logo svg,
@@ -609,7 +609,7 @@ html{scroll-behavior:auto}
 :root[data-view="detail"] .search-panel,
 :root[data-view="saved"] .search-panel,
 :root[data-view="no-results"] .search-panel,
-:root[data-view="network-error"] .search-panel{top:137px;width:min(530px,calc(100vw - 36px));transform:translate(-50%,-50%) scale(.98)}
+:root[data-view="network-error"] .search-panel{top:132px;width:min(530px,calc(100vw - 36px));transform:translate(-50%,-50%) scale(.98)}
 :root[data-view="searching"] .search-row,
 :root[data-view="results"] .search-row,
 :root[data-view="detail"] .search-row,
@@ -643,13 +643,13 @@ html{scroll-behavior:auto}
   :root[data-view="detail"] .center-logo,
   :root[data-view="saved"] .center-logo,
   :root[data-view="no-results"] .center-logo,
-  :root[data-view="network-error"] .center-logo{top:72px;font-size:23px}
+  :root[data-view="network-error"] .center-logo{top:70px;font-size:23px}
   :root[data-view="searching"] .search-panel,
   :root[data-view="results"] .search-panel,
   :root[data-view="detail"] .search-panel,
   :root[data-view="saved"] .search-panel,
   :root[data-view="no-results"] .search-panel,
-  :root[data-view="network-error"] .search-panel{top:126px;width:calc(100vw - 28px)}
+  :root[data-view="network-error"] .search-panel{top:120px;width:calc(100vw - 28px)}
   :root[data-view="detail"] .results-section,
   :root[data-view="saved"] .results-section,
   :root[data-view="no-results"] .results-section,

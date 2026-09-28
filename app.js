@@ -60,7 +60,7 @@
       networkKicker:'A SMALL INTERNET MOMENT', networkTitle:'Couldn’t reach the lyric sources.',
       networkHeading:'Let’s try that again.', networkCopy:'Check your connection and search again in a moment.',
       lyricsKicker:'THE WORDS BEHIND THE MUSIC', lyricsTitle:'Pick a line. Make it yours.', lyricsWord:'LYRICS',
-      lyricsUnavailable:'We found the song, but lyrics aren’t available from our lyric sources yet.', trackInfo:'TRACK INFO', trackInfoPrefix:'Track info: ', theLyrics:'THE LYRICS', selectTip:'Tap lines to select up to 5',
+      lyricsUnavailable:'We found the song, but lyrics aren’t available from our lyric sources yet.', trackInfo:'TRACK INFO', trackInfoPrefix:'Track info: ', theLyrics:'THE LYRICS', selectTip:'Tap lines to select up to 10',
       makeItYours:'MAKE IT YOURS', snippetTitle:'A line worth keeping.',
       snippetIntro:'Select a lyric, or write your own excerpt below. Then turn it into a shareable card.',
       snippetPlaceholder:'Your favorite line will show up here…', cardMood:'CARD MOOD', moodLavender:'Lavender', moodRose:'Rose', moodMist:'Mist',
@@ -81,7 +81,7 @@
       resultLabel:'{title} by {artist}, from {provider}', saveSong:'Save song', removeSaved:'Remove saved song', saveAction:'Save', savedAction:'Saved',
       shareTitle:'{title} by {artist}', shareCredit:'— {title} by {artist}', shareAppCredit:'— by Lyricsify', copyFormat:'“{snippet}” — {title} by {artist}', xSharePrefix:'A lyric I love: ', xComposerReady:'Opening X with your selected line.', xShareReady:'Share sheet opened with your lyric image and text. Choose X to post.', xImageFallback:'Your image is downloading; X is opening with your text. Attach the image before posting.', instagramShareReady:'Image sent to the share sheet. Finish posting in Instagram.',
       savedToast:'Saved for later.', removedToast:'Removed from your saved songs.', saveError:'Could not save in this browser.',
-      emptySnippet:'Select a line or add a snippet first.', longSelection:'That’s a long one — trimmed to 500 characters.', tooManyLines:'You can select up to 5 lines. Remove one to choose another.',
+      emptySnippet:'Select a line or add a snippet first.', longSelection:'That’s a long one — trimmed to 500 characters.', tooManyLines:'You can select up to 10 lines. Remove one to choose another.',
       imageError:'Couldn’t make the image. Try another browser.', cardReady:'Your lyric card is ready.',
       copied:'Snippet copied with song credit.', copyFailed:'Couldn’t copy automatically — select and copy the text.',
       sharingFailed:'Sharing unavailable — image downloaded.', sourceAttribution:' · lyrics are owned by their respective writers and publishers.',
@@ -105,7 +105,7 @@
       networkKicker:'اینترنت یه لحظه قاطی کرد', networkTitle:'الان به منبع ترانه وصل نمی‌شیم.',
       networkHeading:'دوباره امتحان کنیم؟', networkCopy:'اینترنت رو چک کن و چند لحظه دیگه دوباره بگرد.',
       lyricsKicker:'حرفایی که توی آهنگا می‌مونه', lyricsTitle:'یه مصرع انتخاب کن، برای خودت نگهش دار.', lyricsWord:'متن ترانه',
-      lyricsUnavailable:'آهنگ رو پیدا کردیم، ولی متنش فعلاً توی منبع‌های ما نیست.', trackInfo:'جزئیات آهنگ', trackInfoPrefix:'اطلاعات آهنگ: ', theLyrics:'متن ترانه', selectTip:'برای انتخاب، روی خط‌ها بزن؛ تا ۵ خط',
+      lyricsUnavailable:'آهنگ رو پیدا کردیم، ولی متنش فعلاً توی منبع‌های ما نیست.', trackInfo:'جزئیات آهنگ', trackInfoPrefix:'اطلاعات آهنگ: ', theLyrics:'متن ترانه', selectTip:'برای انتخاب، روی خط‌ها بزن؛ تا ۱۰ خط',
       makeItYours:'مال خودت کن', snippetTitle:'یه خط که به دل می‌شینه.',
       snippetIntro:'یه تیکه از ترانه رو انتخاب کن یا خودت بنویس؛ بعد ازش یه کارت بساز و بفرست.',
       snippetPlaceholder:'اون مصرعی که دوست داری…', cardMood:'حال‌وهوای کارت', moodLavender:'یاسی', moodRose:'رز', moodMist:'مه‌آلود',
@@ -126,7 +126,7 @@
       resultLabel:'{title} از {artist} · {provider}', saveSong:'ذخیرهٔ آهنگ', removeSaved:'برداشتن از ذخیره‌شده‌ها', saveAction:'ذخیره', savedAction:'ذخیره شد',
       shareTitle:'{title} از {artist}', shareCredit:'— {title} از {artist}', shareAppCredit:'— با Lyricsify', copyFormat:'«{snippet}» — {title} از {artist}', xSharePrefix:'یه مصرع که دوستش دارم: ', xComposerReady:'پست با مصرعت رو توی X باز می‌کنیم.', xShareReady:'منوی اشتراک‌گذاری با تصویر و متن باز شد؛ X رو برای انتشار انتخاب کن.', xImageFallback:'تصویر داره دانلود می‌شه و متن در X باز می‌شه؛ قبل از انتشار، تصویر رو ضمیمه کن.', instagramShareReady:'تصویر به منوی اشتراک‌گذاری فرستاده شد؛ انتشارش رو توی اینستاگرام کامل کن.',
       savedToast:'باشه، برای بعد نگهش داشتیم.', removedToast:'از آهنگای ذخیره‌شده برداشتیم.', saveError:'توی این مرورگر ذخیره نشد.',
-      emptySnippet:'اول یه مصرع انتخاب کن یا بنویس.', longSelection:'این یکی طولانی بود؛ تا ۵۰۰ نویسه کوتاهش کردیم.', tooManyLines:'حداکثر ۵ خط؛ برای انتخاب خط تازه، اول یکی رو بردار.',
+      emptySnippet:'اول یه مصرع انتخاب کن یا بنویس.', longSelection:'این یکی طولانی بود؛ تا ۵۰۰ نویسه کوتاهش کردیم.', tooManyLines:'حداکثر ۱۰ خط؛ برای انتخاب خط تازه، اول یکی رو بردار.',
       imageError:'تصویر ساخته نشد؛ با یه مرورگر دیگه امتحان کن.', cardReady:'کارتت آماده‌ست.',
       copied:'متن و اسم آهنگ کپی شد.', copyFailed:'کپی نشد؛ خودت متن رو انتخاب و کپی کن.',
       sharingFailed:'اشتراک‌گذاری نشد؛ تصویر رو دانلود کردیم.', sourceAttribution:' · متن ترانه مال نویسنده‌ها و ناشرهاشه.',
@@ -770,7 +770,7 @@
     if (!currentSong || !currentSong.lyrics) return;
     const index = Number(line.dataset.lineIndex);
     if (selectedLyricLines.has(index)) selectedLyricLines.delete(index);
-    else if (selectedLyricLines.size >= 5) {
+    else if (selectedLyricLines.size >= 10) {
       toast(t('tooManyLines'), 'error');
       return;
     } else selectedLyricLines.add(index);
@@ -938,7 +938,7 @@
     let lineCount = 0;
     let endIndex = lines.length;
     for (let index = 0; index < lines.length; index += 1) {
-      if (lines[index].trim() && ++lineCount > 5) {
+      if (lines[index].trim() && ++lineCount > 10) {
         endIndex = index;
         break;
       }
