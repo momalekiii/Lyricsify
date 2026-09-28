@@ -711,8 +711,8 @@
         red += pixels[index]; green += pixels[index + 1]; blue += pixels[index + 2]; count += 1;
       }
       if (!count) return resetCoverTheme();
-      const soften = (value) => Math.round((value / count) * .82 + 128 * .18);
-      currentCoverRGB = [soften(red), soften(green), soften(blue)];
+      const average = (value) => Math.round(value / count);
+      currentCoverRGB = [average(red), average(green), average(blue)];
       const rgb = currentCoverRGB.join(', ');
       document.documentElement.style.setProperty('--cover-glow-light', `rgba(${rgb}, .30)`);
       document.documentElement.style.setProperty('--cover-glow-dark', `rgba(${rgb}, .36)`);
@@ -1039,23 +1039,16 @@
     const sansFont = persian ? 'Vazirmatn, Tahoma, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif';
     ctx.direction = persian ? 'rtl' : 'ltr';
     ctx.textAlign = align;
-    const appColor = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#1ed760';
-    const appHex = appColor.match(/^#([a-f\d]{3}|[a-f\d]{6})$/i)?.[1] || '1ed760';
-    const appChannels = appHex.length === 3
-      ? [...appHex].map((channel) => parseInt(channel + channel, 16))
-      : appHex.match(/../g).map((channel) => parseInt(channel, 16));
-    const theme = {
-      accent: appColor, text: '#f7f7f7', muted: '#b3b3b3',
-    };
-    const toneDown = (channels) => channels.map((channel) => Math.round(channel * .48));
-    const coverTone = toneDown(currentCoverRGB || [96, 96, 96]);
-    const appTone = toneDown(appChannels);
-    const balancedTone = coverTone.map((channel, index) => Math.round((channel + appTone[index]) / 2));
+    const coverBase = currentCoverRGB || [72, 72, 72];
+    const shadeCover = (factor) => coverBase.map((channel) => Math.round(channel * factor));
     const toRgb = (channels) => `rgb(${channels.join(', ')})`;
+    const theme = {
+      accent: toRgb(shadeCover(.62)), text: '#f7f7f7', muted: '#b3b3b3',
+    };
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, height);
-    gradient.addColorStop(0, toRgb(coverTone));
-    gradient.addColorStop(.5, toRgb(balancedTone));
-    gradient.addColorStop(1, toRgb(appTone));
+    gradient.addColorStop(0, toRgb(shadeCover(.42)));
+    gradient.addColorStop(.5, toRgb(shadeCover(.33)));
+    gradient.addColorStop(1, toRgb(shadeCover(.24)));
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, height);
 
