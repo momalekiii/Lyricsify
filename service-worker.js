@@ -1,5 +1,5 @@
-const CACHE_NAME = 'lyricsify-shell-v14';
-const APP_SHELL = ['./', './index.html', './styles.css?v=warm14', './app.js?v=warm14', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
+const CACHE_NAME = 'lyricsify-shell-v16';
+const APP_SHELL = ['./', './index.html', './styles.css?v=warm16', './app.js?v=warm16', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));

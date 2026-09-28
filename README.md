@@ -1,6 +1,6 @@
 # Lyricsify
 
-Lyricsify is a phone-first, installable web app for finding lyrics, saving songs in your browser, and turning 1–5 chosen lines into a shareable image. Its minimal Spotify-inspired interface centers a single search field, automatically searches after typing pauses, and shows matches in a dropdown. The About button contains saved songs, theme and language controls, and app information. It includes English and Persian (RTL with Vazirmatn) plus a light theme. Made with love by [@momalekiii](https://github.com/momalekiii). The app is plain HTML, CSS, and JavaScript: no build step, framework, server, or API key is needed for the web experience.
+Lyricsify is a phone-first, installable web app for finding lyrics, saving songs in your browser, and turning 1–5 chosen lines into a shareable image. Its minimal Spotify-inspired interface places a centered logo above one search field, searches automatically after typing pauses, and shows matches in a dropdown. Saved songs, theme, and language controls are easy to reach from the header; About contains app information. Tap lyric lines to select up to five without text-dragging. The app includes English and Persian (RTL with Vazirmatn) plus light and dark themes. The footer credits @momalekiii. The app is plain HTML, CSS, and JavaScript: no build step, framework, server, or API key is needed for the web experience.
 
 ## Run it locally
 
@@ -21,7 +21,7 @@ Searches use all available lyric sources by default; when the query has an expli
 ## Share a lyric
 
 1. Search and open a song.
-2. Select 1–5 lyric lines, or type an excerpt in the snippet box. Longer selections are shortened to five lines with a warning.
+2. Tap up to five lyric lines to add them to the excerpt, or type your own. The lyric lines are buttons rather than selectable text; an attempt to select a sixth line shows a warning.
 3. Select **Share card**, open **Instagram** to choose **Story (9:16)** or **Post (4:5)**, or use **Download image**, **Copy text**, or **Post to X**.
 
 Share cards are rendered on-device as PNGs with matching album artwork when available (1080 × 1350 for posts, 1080 × 1920 for Stories). They omit Lyricsify branding and lyric-provider labels so the selected excerpt stays front and center. The X and Instagram share text places “— by Lyricsify” under the excerpt. On phones, **Share card**, **Instagram**, and **Post to X** use the native share sheet when the browser supports sharing image files, with a prefilled caption. Choose Instagram or X there to pass along the image. If image sharing is unavailable, the image downloads; X opens a prefilled text composer so you can attach it, and Instagram opens for manual upload. The social app always requires you to confirm the post. **Post to X** opens X's composer with a short prefilled introduction, the selected line, and song credit; the user reviews and publishes it. The app does not log in to social accounts or post on a user's behalf. Social services decide which sharing options are available on a given device.

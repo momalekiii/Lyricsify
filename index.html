@@ -13,17 +13,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lrclib.net">
   <link rel="preconnect" href="https://api.lyrics.ovh">
-  <link rel="stylesheet" href="styles.css?v=warm14">
-  <script src="app.js?v=warm14" defer></script>
+  <link rel="stylesheet" href="styles.css?v=warm16">
+  <script src="app.js?v=warm16" defer></script>
 </head>
 <body>
   <div class="app-shell">
 <main class="main-content" id="home">
       <header class="topbar">
-        <a class="brand" href="#home" id="home-link" aria-label="Lyricsify home">Lyricsify</a>
-        <button class="about-icon-button" id="about-button" type="button" aria-label="About Lyricsify" title="About" data-i18n-aria="about"><span aria-hidden="true">i</span></button>
+        <div class="header-actions" aria-label="App controls">
+          <button class="header-action saved-view-button" id="saved-view-button" type="button"><span data-i18n="savedSongs">Saved songs</span><span id="saved-count">0</span></button>
+          <button class="header-action theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch theme"><span class="theme-label" data-i18n="darkMode">Dark mode</span></button>
+          <button class="header-action language-toggle" id="language-toggle" type="button" aria-label="Switch language">EN</button>
+          <button class="about-icon-button" id="about-button" type="button" aria-label="About Lyricsify" title="About" data-i18n-aria="about"><span aria-hidden="true">i</span></button>
+        </div>
       </header>
       <span id="view-label" hidden></span>
+      <a class="center-logo" href="#home" id="home-link" aria-label="Lyricsify home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16h4m4-7v14m5-19v24m5-15v6m5-3h4"/></svg>
+        <span>Lyricsify</span>
+      </a>
 
       <form class="search-panel" id="search-form" aria-label="Search songs">
         <label class="sr-only" for="search-input" data-i18n="searchPrompt">Search songs</label>
@@ -55,8 +63,8 @@
               <div class="track-meta"><span class="source-label" id="detail-source">LYRICS</span><h3 id="detail-title"></h3><p id="detail-artist"></p><p id="detail-album" class="album-meta" hidden></p><div class="artist-links" id="artist-links" aria-label="Artist profiles"></div></div>
               <button class="favorite-button" id="favorite-button" type="button" aria-label="Save song" title="Save song"><span class="favorite-label" data-i18n="saveAction">Save</span></button>
             </div>
-            <div class="lyrics-toolbar"><span data-i18n="theLyrics">THE LYRICS</span><span class="select-tip" data-i18n="selectTip">Select 1–5 lines</span></div>
-            <pre id="lyrics-text" class="lyrics-text" tabindex="0"></pre>
+            <div class="lyrics-toolbar"><span data-i18n="theLyrics">THE LYRICS</span><span class="select-tip" data-i18n="selectTip">Tap lines to select up to 5</span></div>
+            <div id="lyrics-text" class="lyrics-text" role="group" aria-label="Lyrics lines"></div>
             <div class="attribution" id="attribution"></div>
           </article>
           <aside class="snippet-panel" aria-labelledby="snippet-heading">
@@ -86,16 +94,12 @@
 <div><span class="eyebrow small-eyebrow" data-i18n="emptyEyebrow">YOUR NEXT FAVORITE LINE</span><h3 data-i18n="emptyTitle">It’s out there somewhere.</h3><p data-i18n="emptyIntro">Search a title, an artist, or that half-remembered lyric stuck in your head.</p></div>
         </div>
       </section>
+      <footer class="page-footer"><span>© 2026 · Developed with <span class="footer-heart" aria-label="love">❤️</span> by <bdi dir="ltr">@momalekiii</bdi></span></footer>
 </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <dialog id="about-dialog" class="about-dialog">
     <button class="dialog-close" id="dialog-close" type="button" aria-label="Close" data-i18n-aria="close">×</button><span class="eyebrow small-eyebrow" data-i18n="sourceNote">ABOUT LYRICSIFY</span><h2 data-i18n="aboutTitle">Lyricsify is a little window, not a lyrics archive.</h2>
-    <div class="about-tools">
-      <button class="about-tool saved-tool" id="saved-view-button" type="button"><span data-i18n="savedSongs">Saved songs</span><span id="saved-count">0</span></button>
-      <button class="about-tool" id="language-toggle" type="button" aria-label="Switch language">EN</button>
-      <button class="about-tool" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch theme"><span class="theme-label" data-i18n="darkMode">Dark mode</span></button>
-    </div>
     <p data-i18n-html="aboutSources">Searches use <a href="https://lrclib.net" target="_blank" rel="noreferrer">LRCLIB</a> and <a href="https://lyrics.ovh" target="_blank" rel="noreferrer">Lyrics.ovh</a>. Availability depends on each source. We don’t store a central lyrics catalog; saved songs stay in this browser.</p>
     <p data-i18n="aboutArtwork">Album artwork is found via Apple’s iTunes Search API and remains the property of its artists, labels, and rights holders.</p>
     <p data-i18n="aboutSharing">Share cards are generated on your device. Social networks control their own posting and sharing features: X opens a prepared post, while Instagram sharing depends on your device’s share menu.</p>

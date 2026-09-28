@@ -519,3 +519,53 @@ body{min-width:320px;min-height:100vh;margin:0;overflow-x:hidden;background:var(
 }
 html{scroll-behavior:auto}
 .app-shell,.topbar,.brand,.search-panel,.results-section,.result-card,.about-dialog{animation:none!important;transition:none!important}
+
+/* Centered logo, compact controls, and tap-to-select lyric lines. */
+.topbar{justify-content:flex-end;padding-inline:clamp(12px,3vw,28px)}
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.header-action{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:7px;padding:0 10px;border:1px solid var(--line);border-radius:20px;background:transparent;color:var(--muted);font:500 10px var(--sans);white-space:nowrap}
+.header-action:hover,.header-action:focus-visible{border-color:var(--brand);color:var(--brand);outline:none}
+.saved-view-button #saved-count{display:inline-grid;min-width:17px;height:17px;place-items:center;padding:0 4px;border-radius:10px;background:var(--brand-soft);color:var(--text);font:500 9px var(--sans)}
+.theme-toggle{gap:0;border-radius:20px;background:transparent;color:var(--muted);font:500 10px var(--sans);padding:0 10px;backdrop-filter:none}
+.language-toggle{min-width:39px;font-weight:600;letter-spacing:.02em}
+.about-icon-button{width:34px;height:34px;flex:none}
+.center-logo{position:absolute;z-index:25;top:calc(50% - 83px);left:50%;display:flex;align-items:center;justify-content:center;gap:10px;transform:translate(-50%,-50%);color:var(--text);font:600 27px/1 var(--sans);letter-spacing:-.8px;text-decoration:none;white-space:nowrap}
+.center-logo svg{width:30px;height:30px;overflow:visible;fill:none;stroke:var(--brand);stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round}
+.center-logo:hover{color:var(--brand)}
+.search-panel{top:50%;}
+.lyrics-text{display:block;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:default;caret-color:transparent}
+.lyric-line{display:block;width:100%;min-height:29px;margin:1px 0;padding:3px 8px;border:0;border-radius:5px;background:transparent;color:var(--text);font:inherit;line-height:1.75;text-align:start;white-space:pre-wrap;overflow-wrap:anywhere;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.lyric-line:hover,.lyric-line:focus-visible{outline:none;background:rgba(30,215,96,.08)}
+.lyric-line.is-selected{background:var(--brand-soft);color:var(--brand);box-shadow:inset 2px 0 0 var(--brand)}
+:root[dir="rtl"] .lyric-line.is-selected{box-shadow:inset -2px 0 0 var(--brand)}
+.lyric-gap{height:.65em}
+.lyrics-unavailable{margin:5px 0;color:var(--muted);font:400 13px/1.7 var(--sans)}
+.page-footer{position:fixed;z-index:10;right:0;bottom:15px;left:0;display:block;margin:0;padding:8px 12px;border:0;color:var(--quiet);font:400 11px/1.4 var(--sans);text-align:center;pointer-events:none}
+.page-footer bdi{color:var(--text);font-weight:600}
+.footer-heart{color:#ff4b68;font-size:13px}
+:root[data-view="detail"] .center-logo,:root[data-view="saved"] .center-logo,:root[data-view="no-results"] .center-logo,:root[data-view="network-error"] .center-logo{display:none}
+:root[data-view="detail"] .page-footer,:root[data-view="saved"] .page-footer,:root[data-view="no-results"] .page-footer,:root[data-view="network-error"] .page-footer{position:static;margin:18px auto 10px;padding:10px 12px}
+@media(max-width:600px){
+  .topbar{height:58px;padding-inline:9px}
+  .header-actions{gap:4px}
+  .header-action{min-height:32px;padding-inline:7px;font-size:9px}
+  .saved-view-button{max-width:104px;overflow:hidden}
+  .saved-view-button span:first-child{overflow:hidden;text-overflow:ellipsis}
+  .saved-view-button #saved-count{min-width:16px;height:16px}
+  .language-toggle{min-width:34px;padding-inline:6px}
+  .about-icon-button{width:32px;height:32px}
+  .center-logo{top:calc(50% - 74px);gap:8px;font-size:24px}
+  .center-logo svg{width:27px;height:27px}
+  .page-footer{bottom:9px;font-size:10px}
+  .lyrics-card{padding:13px}
+  .lyric-line{min-height:32px;padding:5px 8px;line-height:1.75}
+}
+@media(max-width:370px){
+  .header-actions{gap:3px}
+  .header-action{padding-inline:5px;font-size:8px}
+  .saved-view-button{max-width:88px}
+  .theme-toggle{max-width:66px;overflow:hidden;text-overflow:ellipsis}
+  .language-toggle{min-width:31px}
+  .about-icon-button{width:30px;height:30px}
+  .center-logo{font-size:22px}
+}
