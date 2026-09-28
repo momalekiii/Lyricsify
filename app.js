@@ -1039,28 +1039,25 @@
     const sansFont = persian ? 'Vazirmatn, Tahoma, sans-serif' : 'Inter, "Segoe UI", Arial, sans-serif';
     ctx.direction = persian ? 'rtl' : 'ltr';
     ctx.textAlign = align;
+    const appColor = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#1ed760';
+    const appHex = appColor.match(/^#([a-f\d]{3}|[a-f\d]{6})$/i)?.[1] || '1ed760';
+    const appChannels = appHex.length === 3
+      ? [...appHex].map((channel) => parseInt(channel + channel, 16))
+      : appHex.match(/../g).map((channel) => parseInt(channel, 16));
     const theme = {
-      accent: '#1ed760', secondary: '#1ed760',
-      text: '#f7f7f7', muted: '#b3b3b3',
+      accent: appColor, text: '#f7f7f7', muted: '#b3b3b3',
     };
-    const coverTone = currentCoverRGB
-      ? currentCoverRGB.map((channel) => Math.round(channel * .43))
-      : [22, 43, 31];
-    const greenTone = [30, 215, 96];
-    const coverGreen = coverTone.map((channel, index) => Math.round(channel * .48 + greenTone[index] * .52));
+    const toneDown = (channels) => channels.map((channel) => Math.round(channel * .48));
+    const coverTone = toneDown(currentCoverRGB || [96, 96, 96]);
+    const appTone = toneDown(appChannels);
+    const balancedTone = coverTone.map((channel, index) => Math.round((channel + appTone[index]) / 2));
+    const toRgb = (channels) => `rgb(${channels.join(', ')})`;
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, height);
-    gradient.addColorStop(0, `rgb(${coverTone.join(', ')})`);
-    gradient.addColorStop(.52, `rgb(${coverGreen.join(', ')})`);
-    gradient.addColorStop(1, '#101411');
+    gradient.addColorStop(0, toRgb(coverTone));
+    gradient.addColorStop(.5, toRgb(balancedTone));
+    gradient.addColorStop(1, toRgb(appTone));
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, height);
-
-    const glowX = persian ? 180 : 900;
-    const glow = ctx.createRadialGradient(glowX, height * .12, 10, glowX, height * .12, 340);
-    glow.addColorStop(0, `${theme.secondary}58`);
-    glow.addColorStop(1, `${theme.secondary}00`);
-    ctx.fillStyle = glow;
-    ctx.fillRect(persian ? 0 : 500, 0, 580, height * .42);
 
     const hasCover = currentArtworkForCard && currentArtworkSongId === currentSong.id && currentArtworkForCard.naturalWidth;
     const coverSize = 148;
@@ -1385,7 +1382,9 @@
   $('#dialog-ok').addEventListener('click', () => $('#about-dialog').close());
   $('#about-dialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
   searchInput.addEventListener('input', () => {
+    const wasInUpperView = ['searching', 'results', 'detail', 'saved', 'no-results', 'network-error'].includes(viewMode);
     const wasInContentView = ['detail', 'saved', 'no-results', 'network-error'].includes(viewMode);
+    const query = searchInput.value.trim();
     clearTimeout(searchDebounceTimer);
     activeSearch += 1;
     clearSearchButton.hidden = !searchInput.value;
@@ -1400,11 +1399,10 @@
     emptyNode.hidden = true;
     setNotice('');
     resetCoverTheme();
-    viewMode = 'home';
+    viewMode = query && wasInUpperView ? 'searching' : 'home';
     emptyMode = 'home';
     updateSectionText();
-    if (wasInContentView) window.scrollTo(0, 0);
-    const query = searchInput.value.trim();
+    if (!query && wasInContentView) window.scrollTo(0, 0);
     if (query.length >= 2) {
       searchDebounceTimer = setTimeout(() => {
         if (query === searchInput.value.trim()) searchForm.requestSubmit();

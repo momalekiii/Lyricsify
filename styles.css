@@ -580,36 +580,79 @@ html{scroll-behavior:auto}
   font-family: 'Vazirmatn', Tahoma, sans-serif;
 }
 
-/* Keep the search controls reachable in every view and preserve the header on scroll. */
+/* The search and logo animate together into a compact, persistent header state. */
 .topbar{position:fixed;z-index:60;direction:ltr;background:var(--bg);border-bottom:1px solid var(--line)}
 .header-actions{direction:ltr}
 #about-button{direction:ltr;unicode-bidi:isolate}
+.center-logo{position:fixed;z-index:55;top:calc(50% - 83px);left:50%;display:flex;align-items:center;justify-content:center;gap:10px;transform:translate(-50%,-50%);transition:top .56s cubic-bezier(.22,.7,.2,1),transform .56s cubic-bezier(.22,.7,.2,1),font-size .56s cubic-bezier(.22,.7,.2,1);}
+.center-logo svg{transition:width .56s cubic-bezier(.22,.7,.2,1),height .56s cubic-bezier(.22,.7,.2,1)}
+.search-panel{position:fixed;z-index:50;top:50%;left:50%;width:min(560px,calc(100vw - 36px));margin:0;padding:0;transform:translate(-50%,-50%);transition:top .56s cubic-bezier(.22,.7,.2,1),width .56s cubic-bezier(.22,.7,.2,1),transform .56s cubic-bezier(.22,.7,.2,1)}
+.search-row{transition:min-height .56s cubic-bezier(.22,.7,.2,1),padding .56s cubic-bezier(.22,.7,.2,1)}
+.search-input-wrap{transition:height .56s cubic-bezier(.22,.7,.2,1)}
 .search-input-wrap .search-clear{display:grid;width:32px;height:32px;flex:none;place-items:center;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);font:400 22px/1 var(--sans);cursor:pointer}
 .search-input-wrap .search-clear:hover,.search-input-wrap .search-clear:focus-visible{background:var(--brand-soft);color:var(--text);outline:none}
 .search-input-wrap .search-clear[hidden]{display:none}
+:root[data-view="searching"] .center-logo,
+:root[data-view="results"] .center-logo,
 :root[data-view="detail"] .center-logo,
 :root[data-view="saved"] .center-logo,
 :root[data-view="no-results"] .center-logo,
-:root[data-view="network-error"] .center-logo{position:sticky;z-index:25;top:72px;left:auto;display:flex;width:max-content;margin:76px auto 12px;transform:none}
+:root[data-view="network-error"] .center-logo{top:80px;transform:translate(-50%,-50%) scale(.94);font-size:25px}
+:root[data-view="searching"] .center-logo svg,
+:root[data-view="results"] .center-logo svg,
+:root[data-view="detail"] .center-logo svg,
+:root[data-view="saved"] .center-logo svg,
+:root[data-view="no-results"] .center-logo svg,
+:root[data-view="network-error"] .center-logo svg{width:28px;height:28px}
+:root[data-view="searching"] .search-panel,
+:root[data-view="results"] .search-panel,
 :root[data-view="detail"] .search-panel,
 :root[data-view="saved"] .search-panel,
 :root[data-view="no-results"] .search-panel,
-:root[data-view="network-error"] .search-panel{position:sticky;z-index:50;top:120px;left:auto;width:min(560px,calc(100vw - 36px));margin:0 auto 18px;transform:none}
+:root[data-view="network-error"] .search-panel{top:137px;width:min(530px,calc(100vw - 36px));transform:translate(-50%,-50%) scale(.98)}
+:root[data-view="searching"] .search-row,
+:root[data-view="results"] .search-row,
+:root[data-view="detail"] .search-row,
+:root[data-view="saved"] .search-row,
+:root[data-view="no-results"] .search-row,
+:root[data-view="network-error"] .search-row{min-height:62px}
+:root[data-view="searching"] .search-input-wrap,
+:root[data-view="results"] .search-input-wrap,
+:root[data-view="detail"] .search-input-wrap,
+:root[data-view="saved"] .search-input-wrap,
+:root[data-view="no-results"] .search-input-wrap,
+:root[data-view="network-error"] .search-input-wrap{height:58px}
+:root[data-view="detail"] .results-section,
+:root[data-view="saved"] .results-section,
+:root[data-view="no-results"] .results-section,
+:root[data-view="network-error"] .results-section{padding-top:206px}
 .page-footer>span{direction:ltr;unicode-bidi:isolate}
 .instagram-options{position:absolute;top:auto;right:auto;bottom:calc(100% + 6px);left:auto;inset-block-start:auto;inset-block-end:calc(100% + 6px);inset-inline-start:0;inset-inline-end:auto;width:100%;padding:6px;background:#202020;border:1px solid var(--line);border-radius:11px;box-shadow:0 14px 34px rgba(0,0,0,.24)}
 :root:not([data-theme="dark"]) .instagram-options{background:#fff;box-shadow:0 14px 34px rgba(0,0,0,.14)}
 .instagram-options button{display:flex;width:100%;min-height:42px;align-items:center;justify-content:space-between;gap:12px;margin:2px 0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#2b2b2b;color:var(--text);text-align:start;cursor:pointer}
 :root:not([data-theme="dark"]) .instagram-options button{background:#f3f3f3}
 .instagram-options button:hover,.instagram-options button:focus-visible{border-color:rgba(30,215,96,.45);background:var(--brand-soft);outline:none}
+.instagram-options button span:last-child{direction:ltr;unicode-bidi:isolate}
+.instagram-toggle[aria-expanded="true"]{border-color:rgba(30,215,96,.5);background:var(--brand-soft);color:var(--text)}
 @media(max-width:760px){
+  .center-logo{top:calc(50% - 74px)}
+  .center-logo svg{width:27px;height:27px}
+  .search-panel{width:calc(100vw - 28px)}
+  :root[data-view="searching"] .center-logo,
+  :root[data-view="results"] .center-logo,
   :root[data-view="detail"] .center-logo,
   :root[data-view="saved"] .center-logo,
   :root[data-view="no-results"] .center-logo,
-  :root[data-view="network-error"] .center-logo{top:64px;margin-top:68px}
+  :root[data-view="network-error"] .center-logo{top:72px;font-size:23px}
+  :root[data-view="searching"] .search-panel,
+  :root[data-view="results"] .search-panel,
   :root[data-view="detail"] .search-panel,
   :root[data-view="saved"] .search-panel,
   :root[data-view="no-results"] .search-panel,
-  :root[data-view="network-error"] .search-panel{top:112px}
+  :root[data-view="network-error"] .search-panel{top:126px;width:calc(100vw - 28px)}
+  :root[data-view="detail"] .results-section,
+  :root[data-view="saved"] .results-section,
+  :root[data-view="no-results"] .results-section,
+  :root[data-view="network-error"] .results-section{padding-top:194px}
 }
-.instagram-options button span:last-child{direction:ltr;unicode-bidi:isolate}
-.instagram-toggle[aria-expanded="true"]{border-color:rgba(30,215,96,.5);background:var(--brand-soft);color:var(--text)}
+@media(prefers-reduced-motion:reduce){.center-logo,.search-panel,.search-row,.search-input-wrap{transition:none!important}}
